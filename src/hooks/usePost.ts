@@ -4,6 +4,23 @@ import { supabase } from '../lib/supabase'
 import { userToday } from '../lib/date'
 import { useTimezone } from '../lib/ProfileContext'
 
+const POST_CACHE_KEY = 'ost_today_post'
+
+function savePostCache(p: Post) {
+  try { sessionStorage.setItem(POST_CACHE_KEY, JSON.stringify(p)) } catch {}
+}
+
+function loadPostCache(): Post | null {
+  try {
+    const raw = sessionStorage.getItem(POST_CACHE_KEY)
+    if (!raw) return null
+    const p = JSON.parse(raw) as Post
+    const todayBrowser = userToday(Intl.DateTimeFormat().resolvedOptions().timeZone)
+    const todayUtc = new Date().toISOString().slice(0, 10)
+    return (p.date === todayBrowser || p.date === todayUtc) ? p : null
+  } catch { return null }
+}
+
 export interface Post {
   id: string
   userId: string
@@ -54,9 +71,11 @@ export function isWithinEditWindow(post: Post): boolean {
 
 export function useTodayPost(): UseTodayPost {
   const timezone = useTimezone()
-  const [post, setPost] = useState<Post | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isEditable, setIsEditable] = useState(false)
+  const cached = loadPostCache()
+
+  const [post, setPost] = useState<Post | null>(cached)
+  const [isLoading, setIsLoading] = useState(cached === null)
+  const [isEditable, setIsEditable] = useState(() => cached ? isWithinEditWindow(cached) : false)
 
   useEffect(() => {
     let cancelled = false
@@ -74,6 +93,7 @@ export function useTodayPost(): UseTodayPost {
         const p = rowToPost(data as Record<string, unknown>)
         setPost(p)
         setIsEditable(isWithinEditWindow(p))
+        savePostCache(p)
       }
       setIsLoading(false)
     }
@@ -93,6 +113,7 @@ export function useTodayPost(): UseTodayPost {
   function handleSetPost(p: Post) {
     setPost(p)
     setIsEditable(isWithinEditWindow(p))
+    savePostCache(p)
   }
 
   return { post, isLoading, isEditable, setPost: handleSetPost }
@@ -105,7 +126,8 @@ export function usePost(): UsePost {
   async function submit({ promptId, text, photoFile, keepPhotoUrl }: SubmitArgs): Promise<{ post: Post | null; graceUsed: boolean; error: string | null }> {
     setIsSubmitting(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: authData } = await supabase.auth.getUser()
+      const user = authData?.user
       if (!user) return { post: null, graceUsed: false, error: 'Not signed in' }
 
       let photoUrl: string | null = keepPhotoUrl ?? null
@@ -125,7 +147,6 @@ export function usePost(): UsePost {
         photoUrl = path
       }
 
-      // Step 1: Save the post directly — same approach that worked in M1
       const today = userToday(timezone)
       const { data: savedPost, error: saveError } = await supabase
         .from('posts')
@@ -142,7 +163,6 @@ export function usePost(): UsePost {
 
       if (saveError) return { post: null, graceUsed: false, error: saveError.message }
 
-      // Step 2: Call RPC for streak + grace day (non-blocking — post is already saved)
       let graceUsed = false
       const { data: rpcData } = await supabase.rpc('submit_post', {
         p_prompt_id:  promptId,
@@ -154,7 +174,8 @@ export function usePost(): UsePost {
       const rawRpc = (Array.isArray(rpcData) ? rpcData[0] : rpcData) as Record<string, unknown> | null
       graceUsed = (rawRpc?.grace_used as boolean) ?? false
 
-      return { post: rowToPost(savedPost as Record<string, unknown>), graceUsed, error: null }
+      const post = rowToPost(savedPost as Record<string, unknown>)
+      return { post, graceUsed, error: null }
     } finally {
       setIsSubmitting(false)
     }

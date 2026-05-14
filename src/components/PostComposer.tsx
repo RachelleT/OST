@@ -93,7 +93,9 @@ export default function PostComposer({
         showToast(error)
         return
       }
-      if (post) onSubmitted(post, graceUsed)
+      if (post) {
+        onSubmitted(post, graceUsed)
+      }
     } catch (err) {
       showToast(err instanceof Error ? err.message : String(err))
     }
