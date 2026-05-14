@@ -125,7 +125,7 @@ export function usePost(): UsePost {
         photoUrl = path
       }
 
-      const { data, error: rpcError } = await supabase.rpc('submit_post', {
+      const { data: rpcData, error: rpcError } = await supabase.rpc('submit_post', {
         p_prompt_id:  promptId,
         p_text:       text || '',
         p_photo_url:  photoUrl ?? '',
@@ -135,21 +135,20 @@ export function usePost(): UsePost {
 
       if (rpcError) return { post: null, graceUsed: false, error: rpcError.message }
 
-      // PostgREST may return jsonb as an array or as a plain object
-      const raw = (Array.isArray(data) ? data[0] : data) as Record<string, unknown> | null
-      if (!raw || !raw.id) {
-        // RPC ran but response is unusable — fetch the saved post directly
-        const today = userToday(timezone)
-        const { data: fallback } = await supabase
-          .from('posts').select('*').eq('date', today).maybeSingle()
-        if (!fallback) return { post: null, graceUsed: false, error: 'Post saved but could not read it back' }
-        return { post: rowToPost(fallback as Record<string, unknown>), graceUsed: false, error: null }
+      // Extract grace_used from RPC response (best-effort — format varies by PostgREST version)
+      const rawRpc = (Array.isArray(rpcData) ? rpcData[0] : rpcData) as Record<string, unknown> | null
+      const graceUsed = (rawRpc?.grace_used as boolean) ?? false
+
+      // Always fetch the saved post directly — more reliable than parsing the RPC return value
+      const today = userToday(timezone)
+      const { data: savedPost, error: fetchError } = await supabase
+        .from('posts').select('*').eq('date', today).maybeSingle()
+
+      if (fetchError || !savedPost) {
+        return { post: null, graceUsed: false, error: fetchError?.message ?? 'Could not load saved post' }
       }
 
-      const post = rowToPost(raw)
-      const graceUsed = (raw.grace_used as boolean) ?? false
-
-      return { post, graceUsed, error: null }
+      return { post: rowToPost(savedPost as Record<string, unknown>), graceUsed, error: null }
     } finally {
       setIsSubmitting(false)
     }
