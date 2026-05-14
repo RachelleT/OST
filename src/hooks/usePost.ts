@@ -125,28 +125,34 @@ export function usePost(): UsePost {
         photoUrl = path
       }
 
-      const { data: rpcData, error: rpcError } = await supabase.rpc('submit_post', {
+      // Step 1: Save the post directly — same approach that worked in M1
+      const today = userToday(timezone)
+      const { data: savedPost, error: saveError } = await supabase
+        .from('posts')
+        .upsert({
+          user_id:        user.id,
+          prompt_id:      promptId,
+          date:           today,
+          text:           text || null,
+          photo_url:      photoUrl,
+          updated_at:     new Date().toISOString(),
+        }, { onConflict: 'user_id,date' })
+        .select()
+        .single()
+
+      if (saveError) return { post: null, graceUsed: false, error: saveError.message }
+
+      // Step 2: Call RPC for streak + grace day (non-blocking — post is already saved)
+      let graceUsed = false
+      const { data: rpcData } = await supabase.rpc('submit_post', {
         p_prompt_id:  promptId,
         p_text:       text || '',
         p_photo_url:  photoUrl ?? '',
         p_share_anon: false,
         p_share_named: false,
       })
-
-      if (rpcError) return { post: null, graceUsed: false, error: rpcError.message }
-
-      // Extract grace_used from RPC response (best-effort — format varies by PostgREST version)
       const rawRpc = (Array.isArray(rpcData) ? rpcData[0] : rpcData) as Record<string, unknown> | null
-      const graceUsed = (rawRpc?.grace_used as boolean) ?? false
-
-      // Always fetch the saved post directly — more reliable than parsing the RPC return value
-      const today = userToday(timezone)
-      const { data: savedPost, error: fetchError } = await supabase
-        .from('posts').select('*').eq('date', today).maybeSingle()
-
-      if (fetchError || !savedPost) {
-        return { post: null, graceUsed: false, error: fetchError?.message ?? 'Could not load saved post' }
-      }
+      graceUsed = (rawRpc?.grace_used as boolean) ?? false
 
       return { post: rowToPost(savedPost as Record<string, unknown>), graceUsed, error: null }
     } finally {
