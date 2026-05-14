@@ -82,17 +82,21 @@ export default function PostComposer({
     e.preventDefault()
     if (!canSubmit) return
 
-    const { post, graceUsed, error } = await submit({
-      promptId,
-      text: text.trim(),
-      photoFile,
-      keepPhotoUrl: keepPhotoPath,
-    })
-    if (error) {
-      showToast('Something went wrong. Please try again.')
-      return
+    try {
+      const { post, graceUsed, error } = await submit({
+        promptId,
+        text: text.trim(),
+        photoFile,
+        keepPhotoUrl: keepPhotoPath,
+      })
+      if (error) {
+        showToast(error)
+        return
+      }
+      if (post) onSubmitted(post, graceUsed)
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : String(err))
     }
-    if (post) onSubmitted(post, graceUsed)
   }
 
   return (
