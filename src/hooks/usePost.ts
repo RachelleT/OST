@@ -99,6 +99,7 @@ export function useTodayPost(): UseTodayPost {
 }
 
 export function usePost(): UsePost {
+  const timezone = useTimezone()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function submit({ promptId, text, photoFile, keepPhotoUrl }: SubmitArgs): Promise<{ post: Post | null; graceUsed: boolean; error: string | null }> {
@@ -134,9 +135,19 @@ export function usePost(): UsePost {
 
       if (rpcError) return { post: null, graceUsed: false, error: rpcError.message }
 
-      const result = data as Record<string, unknown>
-      const post = rowToPost(result)
-      const graceUsed = result.grace_used as boolean
+      // PostgREST may return jsonb as an array or as a plain object
+      const raw = (Array.isArray(data) ? data[0] : data) as Record<string, unknown> | null
+      if (!raw || !raw.id) {
+        // RPC ran but response is unusable — fetch the saved post directly
+        const today = userToday(timezone)
+        const { data: fallback } = await supabase
+          .from('posts').select('*').eq('date', today).maybeSingle()
+        if (!fallback) return { post: null, graceUsed: false, error: 'Post saved but could not read it back' }
+        return { post: rowToPost(fallback as Record<string, unknown>), graceUsed: false, error: null }
+      }
+
+      const post = rowToPost(raw)
+      const graceUsed = (raw.grace_used as boolean) ?? false
 
       return { post, graceUsed, error: null }
     } finally {
