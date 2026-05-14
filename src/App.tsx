@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
-import { supabase } from './lib/supabase'
 import SignIn from './screens/SignIn'
 import Onboarding from './screens/Onboarding'
 import Today from './screens/Today'

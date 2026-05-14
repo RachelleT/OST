@@ -10,7 +10,7 @@ interface PostRow {
   date: string
   text: string | null
   photo_url: string | null
-  prompts: { text: string } | null
+  prompts: { text: string }[] | null // Supabase returns joined rows as arrays
 }
 
 const NEUTRAL_BG = '#F1EFE8'
@@ -25,7 +25,7 @@ export default function History() {
       .select('id, date, text, photo_url, prompts(text)')
       .order('date', { ascending: false })
       .then(({ data }) => {
-        setPosts((data as PostRow[]) ?? [])
+        setPosts((data as unknown as PostRow[]) ?? [])
         setIsLoading(false)
       })
   }, [])
@@ -143,9 +143,9 @@ export default function History() {
                             {format(parseISO(post.date), 'EEEE, MMM d')}
                           </p>
                         </div>
-                        {post.prompts?.text && (
+                        {post.prompts?.[0]?.text && (
                           <p className="text-xs text-gray-400 italic mb-1 line-clamp-1">
-                            {post.prompts.text}
+                            {post.prompts[0].text}
                           </p>
                         )}
                         {post.text && (

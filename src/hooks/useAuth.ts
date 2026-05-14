@@ -25,7 +25,7 @@ export function useAuth(): UseAuth {
 
       if (user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
         // Fire-and-forget: restore admin for bootstrap emails on every sign-in
-        supabase.rpc('ensure_bootstrap_admin').catch(() => {/* non-blocking */})
+        void supabase.rpc('ensure_bootstrap_admin')
       }
     })
 
