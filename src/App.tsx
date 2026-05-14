@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
+import { ProfileProvider } from './lib/ProfileContext'
 import SignIn from './screens/SignIn'
 import Onboarding from './screens/Onboarding'
 import Today from './screens/Today'
@@ -44,7 +45,6 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return
-    // Show onboarding once per browser. The flag is set when they complete it.
     setShowOnboarding(!localStorage.getItem('onboardingDone'))
   }, [user])
 
@@ -56,17 +56,22 @@ export default function App() {
   if (window.location.pathname === '/palette-debug') return <PaletteDebug />
   if (isLoading) return <Spinner />
   if (!user) return <BrowserRouter><SignIn /></BrowserRouter>
-
-  // Wait until we know whether onboarding is needed
   if (showOnboarding === null) return <Spinner />
 
   if (showOnboarding) {
-    return <Onboarding onComplete={completeOnboarding} />
+    // ProfileProvider needed here too so onboarding can access profile if needed
+    return (
+      <ProfileProvider>
+        <Onboarding onComplete={completeOnboarding} />
+      </ProfileProvider>
+    )
   }
 
   return (
-    <BrowserRouter>
-      <AuthedApp />
-    </BrowserRouter>
+    <ProfileProvider>
+      <BrowserRouter>
+        <AuthedApp />
+      </BrowserRouter>
+    </ProfileProvider>
   )
 }

@@ -10,7 +10,7 @@ const MAX_CHARS = 280
 interface Props {
   promptId: string
   palette: Palette
-  onSubmitted: (post: Post) => void
+  onSubmitted: (post: Post, graceUsed: boolean) => void
   initialText?: string
   initialPhotoStoragePath?: string | null // storage path of existing photo, if editing
 }
@@ -82,7 +82,7 @@ export default function PostComposer({
     e.preventDefault()
     if (!canSubmit) return
 
-    const { post, error } = await submit({
+    const { post, graceUsed, error } = await submit({
       promptId,
       text: text.trim(),
       photoFile,
@@ -92,7 +92,7 @@ export default function PostComposer({
       showToast('Something went wrong. Please try again.')
       return
     }
-    if (post) onSubmitted(post)
+    if (post) onSubmitted(post, graceUsed)
   }
 
   return (

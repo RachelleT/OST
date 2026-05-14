@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { calculateStreaks } from '../lib/streak'
+import { useTimezone } from '../lib/ProfileContext'
 
 interface StreakState {
   current: number
@@ -9,6 +10,7 @@ interface StreakState {
 }
 
 export function useStreak(refreshKey?: number) {
+  const timezone = useTimezone()
   const [state, setState] = useState<StreakState>({ current: 0, longest: 0, isLoading: true })
 
   useEffect(() => {
@@ -23,10 +25,9 @@ export function useStreak(refreshKey?: number) {
       if (cancelled) return
 
       const dates = (data ?? []).map((r: { date: string }) => r.date)
-      const { current, longest } = calculateStreaks(dates)
+      const { current, longest } = calculateStreaks(dates, timezone)
       setState({ current, longest, isLoading: false })
 
-      // Persist to profile so other surfaces (history) can read it cheaply
       await supabase
         .from('profiles')
         .update({ current_streak: current, longest_streak: longest })
@@ -35,7 +36,7 @@ export function useStreak(refreshKey?: number) {
 
     load()
     return () => { cancelled = true }
-  }, [refreshKey])
+  }, [refreshKey, timezone])
 
   return state
 }

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import imageCompression from 'browser-image-compression'
 import { supabase } from '../lib/supabase'
+import { userToday } from '../lib/date'
+import { useTimezone } from '../lib/ProfileContext'
 
 export interface Post {
   id: string
@@ -17,11 +19,11 @@ interface SubmitArgs {
   promptId: string
   text: string
   photoFile: File | null
-  keepPhotoUrl?: string | null // storage path to retain if no new file selected
+  keepPhotoUrl?: string | null
 }
 
 interface UsePost {
-  submit: (args: SubmitArgs) => Promise<{ post: Post | null; error: string | null }>
+  submit: (args: SubmitArgs) => Promise<{ post: Post | null; graceUsed: boolean; error: string | null }>
   isSubmitting: boolean
 }
 
@@ -45,21 +47,20 @@ function rowToPost(data: Record<string, unknown>): Post {
   }
 }
 
-/** Returns whether a post is still within the 5-minute edit window. */
 export function isWithinEditWindow(post: Post): boolean {
   const updatedAt = new Date(post.updatedAt).getTime()
   return Date.now() - updatedAt < 5 * 60 * 1000
 }
 
-/** Checks for an existing post for today and tracks whether it's editable. */
 export function useTodayPost(): UseTodayPost {
+  const timezone = useTimezone()
   const [post, setPost] = useState<Post | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isEditable, setIsEditable] = useState(false)
 
   useEffect(() => {
     let cancelled = false
-    const today = new Date().toISOString().slice(0, 10)
+    const today = userToday(timezone)
 
     async function load() {
       const { data } = await supabase
@@ -79,9 +80,8 @@ export function useTodayPost(): UseTodayPost {
 
     load()
     return () => { cancelled = true }
-  }, [])
+  }, [timezone])
 
-  // Re-evaluate editability every 10s so the edit button disappears at exactly 5min
   useEffect(() => {
     if (!post) return
     const timer = setInterval(() => {
@@ -101,11 +101,11 @@ export function useTodayPost(): UseTodayPost {
 export function usePost(): UsePost {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  async function submit({ promptId, text, photoFile, keepPhotoUrl }: SubmitArgs): Promise<{ post: Post | null; error: string | null }> {
+  async function submit({ promptId, text, photoFile, keepPhotoUrl }: SubmitArgs): Promise<{ post: Post | null; graceUsed: boolean; error: string | null }> {
     setIsSubmitting(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return { post: null, error: 'Not signed in' }
+      if (!user) return { post: null, graceUsed: false, error: 'Not signed in' }
 
       let photoUrl: string | null = keepPhotoUrl ?? null
 
@@ -120,27 +120,25 @@ export function usePost(): UsePost {
           .from('post-photos')
           .upload(path, compressed, { contentType: 'image/webp', upsert: false })
 
-        if (uploadError) return { post: null, error: uploadError.message }
+        if (uploadError) return { post: null, graceUsed: false, error: uploadError.message }
         photoUrl = path
       }
 
-      const today = new Date().toISOString().slice(0, 10)
-      const { data, error: insertError } = await supabase
-        .from('posts')
-        .upsert({
-          user_id: user.id,
-          prompt_id: promptId,
-          date: today,
-          text: text || null,
-          photo_url: photoUrl,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id,date' })
-        .select()
-        .single()
+      const { data, error: rpcError } = await supabase.rpc('submit_post', {
+        p_prompt_id:  promptId,
+        p_text:       text || '',
+        p_photo_url:  photoUrl ?? '',
+        p_share_anon: false,
+        p_share_named: false,
+      })
 
-      if (insertError) return { post: null, error: insertError.message }
+      if (rpcError) return { post: null, graceUsed: false, error: rpcError.message }
 
-      return { post: rowToPost(data as Record<string, unknown>), error: null }
+      const result = data as Record<string, unknown>
+      const post = rowToPost(result)
+      const graceUsed = result.grace_used as boolean
+
+      return { post, graceUsed, error: null }
     } finally {
       setIsSubmitting(false)
     }

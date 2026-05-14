@@ -1,46 +1,46 @@
+import { userToday } from './date'
+
 /**
- * Given a sorted list of ISO date strings (desc) that the user has posted on,
+ * Given a sorted list of ISO date strings the user has posted on,
  * returns { current, longest }.
  *
- * M1 rules: no grace days. Missing a day resets the streak to 1 (today counts).
+ * M1: no grace days. M2 adds grace — see submit_post RPC for server-side logic.
+ * The client-side function here is used for display only.
  */
-export function calculateStreaks(postedDates: string[]): { current: number; longest: number } {
+export function calculateStreaks(
+  postedDates: string[],
+  timezone: string = Intl.DateTimeFormat().resolvedOptions().timeZone,
+): { current: number; longest: number } {
   if (postedDates.length === 0) return { current: 0, longest: 0 }
 
-  // Normalise to Date objects sorted descending
-  const dates = [...postedDates]
-    .map(d => new Date(d + 'T00:00:00'))
-    .sort((a, b) => b.getTime() - a.getTime())
+  const dates = [...postedDates].sort().reverse() // desc
+  const today = userToday(timezone)
 
-  const todayStr = new Date().toISOString().slice(0, 10)
-  const today = new Date(todayStr + 'T00:00:00')
-
-  // Current streak: walk backwards from today, counting consecutive days
   let current = 0
-  let cursor = today
+  let cursorStr = today
 
-  for (const date of dates) {
-    const diff = Math.round((cursor.getTime() - date.getTime()) / 86_400_000)
-    if (diff === 0) {
+  for (const dateStr of dates) {
+    const cursorMs = new Date(cursorStr + 'T12:00:00').getTime()
+    const dateMs   = new Date(dateStr   + 'T12:00:00').getTime()
+    const diffDays = Math.round((cursorMs - dateMs) / 86_400_000)
+
+    if (diffDays === 0 || diffDays === 1) {
       current += 1
-      cursor = new Date(date.getTime() - 86_400_000) // move cursor back one day
-    } else if (diff === 1 && current === 0) {
-      // Posted yesterday but not today — still counts as an active streak
-      current += 1
-      cursor = new Date(date.getTime() - 86_400_000)
-    } else if (diff <= 1) {
-      current += 1
-      cursor = new Date(date.getTime() - 86_400_000)
+      // Move cursor to the day before this post
+      const prev = new Date(dateMs - 86_400_000)
+      cursorStr = prev.toISOString().slice(0, 10)
     } else {
-      break // gap found
+      break
     }
   }
 
-  // Longest streak: scan all dates for the longest consecutive run
+  // Longest: scan for longest consecutive run
   let longest = 0
   let run = 1
   for (let i = 0; i < dates.length - 1; i++) {
-    const diff = Math.round((dates[i].getTime() - dates[i + 1].getTime()) / 86_400_000)
+    const a = new Date(dates[i]   + 'T12:00:00').getTime()
+    const b = new Date(dates[i+1] + 'T12:00:00').getTime()
+    const diff = Math.round((a - b) / 86_400_000)
     if (diff === 1) {
       run += 1
     } else {
