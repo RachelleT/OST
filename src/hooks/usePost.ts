@@ -7,17 +7,21 @@ import { useTimezone } from '../lib/ProfileContext'
 const POST_CACHE_KEY = 'ost_today_post'
 
 function savePostCache(p: Post) {
-  try { sessionStorage.setItem(POST_CACHE_KEY, JSON.stringify(p)) } catch {}
+  try { localStorage.setItem(POST_CACHE_KEY, JSON.stringify(p)) } catch {}
+}
+
+function isPostFromToday(p: Post): boolean {
+  const todayBrowser = userToday(Intl.DateTimeFormat().resolvedOptions().timeZone)
+  const todayUtc = new Date().toISOString().slice(0, 10)
+  return p.date === todayBrowser || p.date === todayUtc
 }
 
 function loadPostCache(): Post | null {
   try {
-    const raw = sessionStorage.getItem(POST_CACHE_KEY)
+    const raw = localStorage.getItem(POST_CACHE_KEY)
     if (!raw) return null
     const p = JSON.parse(raw) as Post
-    const todayBrowser = userToday(Intl.DateTimeFormat().resolvedOptions().timeZone)
-    const todayUtc = new Date().toISOString().slice(0, 10)
-    return (p.date === todayBrowser || p.date === todayUtc) ? p : null
+    return isPostFromToday(p) ? p : null
   } catch { return null }
 }
 
@@ -85,15 +89,18 @@ export function useTodayPost(): UseTodayPost {
       const { data } = await supabase
         .from('posts')
         .select('*')
-        .eq('date', today)
+        .order('date', { ascending: false })
+        .limit(1)
         .maybeSingle()
 
       if (cancelled) return
       if (data) {
         const p = rowToPost(data as Record<string, unknown>)
-        setPost(p)
-        setIsEditable(isWithinEditWindow(p))
-        savePostCache(p)
+        if (p.date === today || isPostFromToday(p)) {
+          setPost(p)
+          setIsEditable(isWithinEditWindow(p))
+          savePostCache(p)
+        }
       }
       setIsLoading(false)
     }
