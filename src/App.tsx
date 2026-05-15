@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import { ProfileProvider } from './lib/ProfileContext'
+import { supabase } from './lib/supabase'
 import SignIn from './screens/SignIn'
 import Onboarding from './screens/Onboarding'
 import Today from './screens/Today'
@@ -45,7 +46,22 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return
-    setShowOnboarding(!localStorage.getItem('onboardingDone'))
+    if (localStorage.getItem('onboardingDone')) {
+      setShowOnboarding(false)
+      return
+    }
+    // No local flag — check DB to see if this is actually a new account
+    supabase
+      .from('profiles')
+      .select('created_at')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (!data) { setShowOnboarding(true); return }
+        const isNew = Date.now() - new Date(data.created_at as string).getTime() < 5 * 60 * 1000
+        if (!isNew) localStorage.setItem('onboardingDone', '1')
+        setShowOnboarding(isNew)
+      })
   }, [user])
 
   function completeOnboarding() {

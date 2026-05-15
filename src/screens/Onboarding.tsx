@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-
-const REMINDER_OPTIONS = ['7:00 AM', '12:00 PM', '6:00 PM', '8:00 PM', '9:00 PM']
+import { supabase } from '../lib/supabase'
+import { REMINDER_OPTIONS } from '../lib/reminderTime'
 
 interface Props {
   onComplete: () => void
@@ -15,14 +15,20 @@ const slide = {
 
 export default function Onboarding({ onComplete }: Props) {
   const [step, setStep] = useState(0)
-  const [reminderTime, setReminderTime] = useState('8:00 PM')
+  const [reminderValue, setReminderValue] = useState<string | null>('20:00')
 
-  function next() {
-    if (step < 2) setStep(s => s + 1)
-    else {
-      localStorage.setItem('reminderTime', reminderTime)
-      onComplete()
+  async function next() {
+    if (step < 2) { setStep(s => s + 1); return }
+
+    // Save reminder time to DB
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      await supabase
+        .from('profiles')
+        .update({ reminder_time: reminderValue })
+        .eq('id', user.id)
     }
+    onComplete()
   }
 
   return (
@@ -90,45 +96,27 @@ export default function Onboarding({ onComplete }: Props) {
             <fieldset>
               <legend className="sr-only">Choose a reminder time</legend>
               <div className="grid grid-cols-2 gap-2">
-                {REMINDER_OPTIONS.map(time => (
+                {REMINDER_OPTIONS.map(({ label, value }) => (
                   <label
-                    key={time}
+                    key={label}
                     className="flex items-center justify-center rounded-2xl py-3 px-4 text-sm font-medium cursor-pointer border-2 transition-colors"
                     style={{
-                      borderColor: reminderTime === time ? '#2DBFA8' : 'transparent',
-                      background: reminderTime === time ? '#E1F5EE' : '#fff',
-                      color: reminderTime === time ? '#04342C' : '#6b7280',
+                      borderColor: reminderValue === value ? '#2DBFA8' : 'transparent',
+                      background: reminderValue === value ? '#E1F5EE' : '#fff',
+                      color: reminderValue === value ? '#04342C' : '#6b7280',
                     }}
                   >
                     <input
                       type="radio"
                       name="reminder"
-                      value={time}
-                      checked={reminderTime === time}
-                      onChange={() => setReminderTime(time)}
+                      value={value ?? 'off'}
+                      checked={reminderValue === value}
+                      onChange={() => setReminderValue(value)}
                       className="sr-only"
                     />
-                    {time}
+                    {label}
                   </label>
                 ))}
-                <label
-                  className="flex items-center justify-center rounded-2xl py-3 px-4 text-sm font-medium cursor-pointer border-2 transition-colors col-span-1"
-                  style={{
-                    borderColor: !REMINDER_OPTIONS.includes(reminderTime) ? '#2DBFA8' : 'transparent',
-                    background: !REMINDER_OPTIONS.includes(reminderTime) ? '#E1F5EE' : '#fff',
-                    color: '#6b7280',
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="reminder"
-                    value="off"
-                    checked={reminderTime === 'off'}
-                    onChange={() => setReminderTime('off')}
-                    className="sr-only"
-                  />
-                  No reminder
-                </label>
               </div>
             </fieldset>
           </motion.div>
