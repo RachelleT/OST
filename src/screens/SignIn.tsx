@@ -24,7 +24,7 @@ export default function SignIn() {
   async function handleCodeSubmit(e: React.FormEvent) {
     e.preventDefault()
     const trimmed = code.replace(/\s/g, '')
-    if (trimmed.length < 6) return
+    if (trimmed.length !== 6) return
     setStatus('verifying')
     const { error } = await verifyOtp(email, trimmed)
     if (error) {
@@ -109,10 +109,10 @@ export default function SignIn() {
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   pattern="\d*"
-                  maxLength={8}
+                  maxLength={6}
                   value={code}
                   onChange={e => { setCode(e.target.value.replace(/\D/g, '')); setErrorMsg('') }}
-                  placeholder="12345678"
+                  placeholder="123456"
                   className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-2xl text-center tracking-widest text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-1"
                   style={{ '--tw-ring-color': '#2DBFA8' } as React.CSSProperties}
                   disabled={status === 'verifying'}
@@ -126,7 +126,7 @@ export default function SignIn() {
 
               <button
                 type="submit"
-                disabled={status === 'verifying' || code.length < 6}
+                disabled={status === 'verifying' || code.length !== 6}
                 className="w-full rounded-full py-3.5 text-sm font-medium text-white transition-transform active:scale-95 disabled:opacity-50"
                 style={{ background: '#04342C' }}
               >
