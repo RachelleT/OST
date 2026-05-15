@@ -10,7 +10,32 @@ interface PostRow {
   date: string
   text: string | null
   photo_url: string | null
-  prompts: { text: string }[] | null // Supabase returns joined rows as arrays
+  prompts: { text: string }[] | null
+}
+
+function HistoryPhoto({ storagePath }: { storagePath: string }) {
+  const [src, setSrc] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    supabase.storage
+      .from('post-photos')
+      .createSignedUrl(storagePath, 60 * 60)
+      .then(({ data }) => {
+        if (!cancelled && data) setSrc(data.signedUrl)
+      })
+    return () => { cancelled = true }
+  }, [storagePath])
+
+  if (!src) return <div className="w-full h-32 rounded-xl bg-gray-100 animate-pulse mt-2" />
+  return (
+    <img
+      src={src}
+      alt=""
+      className="w-full rounded-xl object-cover mt-2"
+      style={{ maxHeight: 180 }}
+    />
+  )
 }
 
 const NEUTRAL_BG = '#F1EFE8'
@@ -154,7 +179,7 @@ export default function History() {
                           </p>
                         )}
                         {post.photo_url && (
-                          <p className="text-xs text-gray-400 mt-1">📷 Photo</p>
+                          <HistoryPhoto storagePath={post.photo_url} />
                         )}
                       </div>
                     )

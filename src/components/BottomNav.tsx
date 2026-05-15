@@ -1,9 +1,38 @@
 import { NavLink } from 'react-router-dom'
+import type { ReactNode } from 'react'
 
-const TABS = [
-  { to: '/',        label: 'Today',   icon: '✦' },
-  { to: '/history', label: 'History', icon: '📅' },
-  { to: '/profile', label: 'You',     icon: '👤' },
+function TodayIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path d="M10 2 L11.6 8.4 L18 10 L11.6 11.6 L10 18 L8.4 11.6 L2 10 L8.4 8.4 Z" />
+    </svg>
+  )
+}
+
+function HistoryIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="4.5" y="2.5" width="11" height="15" rx="1.5" />
+      <line x1="7" y1="7" x2="13" y2="7" />
+      <line x1="7" y1="10.5" x2="13" y2="10.5" />
+      <line x1="7" y1="14" x2="11" y2="14" />
+    </svg>
+  )
+}
+
+function ProfileIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+      <circle cx="10" cy="7.5" r="3" />
+      <path d="M3.5 17.5C3.5 14.5 6.5 12 10 12s6.5 2.5 6.5 5.5" />
+    </svg>
+  )
+}
+
+const TABS: { to: string; label: string; icon: ReactNode }[] = [
+  { to: '/',        label: 'Today',   icon: <TodayIcon /> },
+  { to: '/history', label: 'History', icon: <HistoryIcon /> },
+  { to: '/profile', label: 'You',     icon: <ProfileIcon /> },
 ]
 
 export default function BottomNav() {
@@ -26,7 +55,7 @@ export default function BottomNav() {
           style={{ color: 'var(--day-accent, #04342C)' }}
           aria-label={label}
         >
-          <span aria-hidden="true" className="text-lg leading-none">{icon}</span>
+          {icon}
           <span>{label}</span>
         </NavLink>
       ))}
