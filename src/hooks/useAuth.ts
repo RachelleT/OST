@@ -9,6 +9,7 @@ interface AuthState {
 
 interface UseAuth extends AuthState {
   signIn: (email: string) => Promise<{ error: string | null }>
+  verifyOtp: (email: string, token: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
 }
 
@@ -40,9 +41,14 @@ export function useAuth(): UseAuth {
     return { error: error?.message ?? null }
   }
 
+  async function verifyOtp(email: string, token: string): Promise<{ error: string | null }> {
+    const { error } = await supabase.auth.verifyOtp({ email, token, type: 'email' })
+    return { error: error?.message ?? null }
+  }
+
   async function signOut(): Promise<void> {
     await supabase.auth.signOut()
   }
 
-  return { ...state, signIn, signOut }
+  return { ...state, signIn, verifyOtp, signOut }
 }
