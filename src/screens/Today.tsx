@@ -126,7 +126,7 @@ export default function Today() {
 
         {/* Bottom section: composer or completed state */}
         {!isLoading && prompt && (
-          <div className="mt-auto pt-8">
+          <div className="mt-8">
             {showComposer ? (
               <PostComposer
                 promptId={prompt.promptId}
@@ -151,6 +151,14 @@ export default function Today() {
             ) : null}
           </div>
         )}
+
+        {/* Bottom anchor */}
+        <p
+          className="mt-auto pt-6 text-center text-xs font-medium"
+          style={{ color: palette.textOnBg, opacity: 0.3 }}
+        >
+          one small thing, every day ✦
+        </p>
       </div>
     </div>
   )
