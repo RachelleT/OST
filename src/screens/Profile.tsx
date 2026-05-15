@@ -125,7 +125,7 @@ export default function Profile() {
   }
 
   const memberSince = profile?.created_at
-    ? format(new Date(profile.created_at), 'MMMM yyyy')
+    ? format(new Date(profile.created_at), 'MM/yyyy')
     : '—'
 
   const ios = isIOS()

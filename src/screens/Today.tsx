@@ -83,12 +83,12 @@ export default function Today() {
 
   return (
     <div
-      className="relative min-h-full flex flex-col overflow-hidden"
+      className="relative flex-1 flex flex-col overflow-hidden"
       style={{ background: palette.bg }}
     >
       <DayBackground palette={palette} />
 
-      <div className="relative z-10 flex flex-col min-h-full px-5 pt-12 pb-8">
+      <div className="relative z-10 flex flex-col flex-1 px-5 pt-12 pb-8">
 
         {/* Top bar */}
         <div className="flex items-center justify-between mb-1">
@@ -126,7 +126,7 @@ export default function Today() {
 
         {/* Bottom section: composer or completed state */}
         {!isLoading && prompt && (
-          <div className="mt-8">
+          <div className="mt-auto pt-8">
             {showComposer ? (
               <PostComposer
                 promptId={prompt.promptId}

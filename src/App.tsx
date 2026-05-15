@@ -27,7 +27,7 @@ function Spinner() {
 function AuthedApp() {
   return (
     <div className="flex flex-col min-h-full">
-      <div className="flex-1 pb-16">
+      <div className="flex-1 pb-16 flex flex-col">
         <Routes>
           <Route path="/" element={<Today />} />
           <Route path="/history" element={<History />} />
