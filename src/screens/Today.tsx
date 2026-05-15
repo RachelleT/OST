@@ -91,17 +91,17 @@ export default function Today() {
       <div className="relative z-10 flex flex-col flex-1 px-5 pt-12 pb-8">
 
         {/* Top bar */}
-        <div className="flex items-center justify-between mb-1">
-          <p className="text-sm font-medium" style={{ color: palette.textOnBg }}>
-            {format(today, 'EEE, MMM d')}
-          </p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <p className="text-base font-semibold" style={{ color: palette.textOnBg }}>
+              Hey, {displayName ?? ''} 👋
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: palette.textOnBg, opacity: 0.55 }}>
+              {format(today, 'EEEE, MMMM d')}
+            </p>
+          </div>
           <StreakPill streak={currentStreak} />
         </div>
-
-        {/* Greeting */}
-        <p className="text-xs mb-6" style={{ color: palette.textOnBg, opacity: 0.75 }}>
-          Hey {displayName ?? ''}  👋
-        </p>
 
         {/* Prompt */}
         <div className="flex-1 flex flex-col justify-center">
