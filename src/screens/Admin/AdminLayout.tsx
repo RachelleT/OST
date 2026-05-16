@@ -126,7 +126,7 @@ export default function AdminLayout() {
               }`
             }
           >
-            <span aria-hidden="true" className="relative text-base">
+            <span aria-hidden="true" className="relative text-xl leading-none">
               {icon}
               {badge != null && (
                 <span className="absolute -top-1 -right-2 text-[9px] font-bold px-1 rounded-full bg-red-500 text-white leading-tight">
@@ -134,7 +134,7 @@ export default function AdminLayout() {
                 </span>
               )}
             </span>
-            {label}
+            <span className="sr-only">{label}</span>
           </NavLink>
         ))}
       </nav>
