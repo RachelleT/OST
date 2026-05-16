@@ -71,8 +71,8 @@ function InviteModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
 
   if (result) {
     return (
-      <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" style={{ background: 'rgba(0,0,0,0.4)' }}>
-        <div className="bg-white w-full max-w-sm rounded-t-3xl md:rounded-3xl p-6 space-y-4 max-h-[90dvh] overflow-y-auto">
+      <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.4)' }}>
+        <div className="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 max-h-[90dvh] overflow-y-auto">
           <p className="text-base font-semibold text-gray-900">
             {result === 'promoted' ? '✓ Promoted immediately' : '✓ Invite created'}
           </p>
@@ -95,11 +95,11 @@ function InviteModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ background: 'rgba(0,0,0,0.4)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-white w-full max-w-sm rounded-t-3xl md:rounded-3xl p-6 space-y-4 max-h-[90dvh] overflow-y-auto">
+      <div className="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 max-h-[90dvh] overflow-y-auto">
         <h2 className="text-base font-semibold text-gray-900">Invite admin</h2>
         <p className="text-sm text-gray-500">
           If they already have an account they'll be promoted immediately. Otherwise they'll be promoted on first sign-in.

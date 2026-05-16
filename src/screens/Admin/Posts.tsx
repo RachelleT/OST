@@ -189,11 +189,11 @@ function PostActionSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ background: 'rgba(0,0,0,0.45)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white w-full max-w-lg rounded-3xl overflow-hidden flex flex-col max-h-[90vh]">
 
         {/* Header */}
         <div className="px-5 py-3 flex items-center justify-between shrink-0" style={{ background: palette.bg }}>

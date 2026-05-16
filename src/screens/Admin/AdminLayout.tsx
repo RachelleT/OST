@@ -105,10 +105,7 @@ export default function AdminLayout() {
         </nav>
 
         {/* Main content */}
-        <main
-          className="flex-1 overflow-y-auto overflow-x-hidden md:pb-0"
-          style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom))' }}
-        >
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16 md:pb-0">
           <Outlet />
         </main>
       </div>
