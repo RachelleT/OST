@@ -71,7 +71,6 @@ function PromptModal({
             placeholder="Write a prompt (5–200 characters)…"
             className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2"
             style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
-            autoFocus
           />
           <div className="flex items-center justify-between mt-1">
             {error
