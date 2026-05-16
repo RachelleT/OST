@@ -185,9 +185,9 @@ export default function Today() {
       </div>
 
       {/* Neutral space below colored section */}
-      <div className="flex-1 flex flex-col px-5 py-10">
+      <div className="py-8 text-center">
         <p
-          className="mt-auto text-center text-xs font-medium"
+          className="text-xs font-medium"
           style={{ color: '#04342C', opacity: 0.3 }}
         >
           one small thing, every day ✦
