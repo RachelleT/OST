@@ -17,6 +17,9 @@ if ('serviceWorker' in navigator) {
   // while the app was backgrounded), activate it immediately.
   navigator.serviceWorker.ready.then(reg => {
     if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' })
+    // Force the browser to check for a new SW version on every app open.
+    // Without this, iOS can delay the check by up to 24 hours.
+    reg.update().catch(() => {})
   })
 }
 
