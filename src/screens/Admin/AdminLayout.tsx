@@ -46,7 +46,7 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: ADMIN_BG }}>
+    <div className="h-full flex flex-col" style={{ background: ADMIN_BG }}>
 
       {/* Top bar */}
       <header

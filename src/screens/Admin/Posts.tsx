@@ -189,7 +189,7 @@ function PostActionSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed top-0 left-0 right-0 h-screen z-50 flex items-center justify-center"
       style={{ background: 'rgba(0,0,0,0.45)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >

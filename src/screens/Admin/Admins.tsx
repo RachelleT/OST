@@ -71,7 +71,7 @@ function InviteModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
 
   if (result) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.4)' }}>
+      <div className="fixed top-0 left-0 right-0 h-screen z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.4)' }}>
         <div className="bg-white w-full max-w-sm mx-4 rounded-3xl p-6 space-y-4 max-h-[90svh] overflow-y-auto">
           <p className="text-base font-semibold text-gray-900">
             {result === 'promoted' ? '✓ Promoted immediately' : '✓ Invite created'}
@@ -95,7 +95,7 @@ function InviteModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed top-0 left-0 right-0 h-screen z-50 flex items-center justify-center"
       style={{ background: 'rgba(0,0,0,0.4)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
