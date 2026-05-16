@@ -38,8 +38,8 @@ const TABS: { to: string; label: string; icon: ReactNode }[] = [
 export default function BottomNav() {
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 flex items-center justify-around border-t bg-white/90 backdrop-blur-sm pb-safe"
-      style={{ borderColor: '#e5e7eb', height: 64 }}
+      className="fixed bottom-0 inset-x-0 flex items-end justify-around border-t bg-white/90 backdrop-blur-sm pb-safe"
+      style={{ borderColor: '#e5e7eb' }}
       aria-label="Main navigation"
     >
       {TABS.map(({ to, label, icon }) => (

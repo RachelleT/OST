@@ -105,15 +105,18 @@ export default function AdminLayout() {
         </nav>
 
         {/* Main content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16 md:pb-0">
+        <main
+          className="flex-1 overflow-y-auto overflow-x-hidden md:pb-0"
+          style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom))' }}
+        >
           <Outlet />
         </main>
       </div>
 
       {/* Bottom tab bar — mobile, fixed */}
       <nav
-        className="md:hidden fixed bottom-0 inset-x-0 z-10 flex border-t bg-white"
-        style={{ borderColor: '#e5e7eb', height: 64 }}
+        className="md:hidden fixed bottom-0 inset-x-0 z-10 flex items-end border-t bg-white pb-safe"
+        style={{ borderColor: '#e5e7eb' }}
         aria-label="Admin navigation"
       >
         {NAV_ITEMS.map(({ to, label, icon, badge }) => (

@@ -35,8 +35,8 @@ function Spinner() {
 
 function AuthedApp() {
   return (
-    <div className="flex flex-col min-h-full">
-      <div className="flex-1 pb-16 flex flex-col">
+    <div className="app-shell flex flex-col min-h-full">
+      <div className="flex-1 flex flex-col" style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom))' }}>
         <Routes>
           <Route path="/" element={<Today />} />
           <Route path="/history" element={<History />} />
