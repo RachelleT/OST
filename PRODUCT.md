@@ -119,16 +119,12 @@ For M2.1, seed with these — they live in `src/data/notes.ts`:
 
 ## Privacy & sharing
 
-Posts are private by default. Two independent toggles per post, both default OFF:
+All posts are shareable by admin — there is no opt-in gate before a post can be featured. The only choice at share time is **how** it is displayed:
 
-- **Allow anonymous use**: admin may feature this post on external surfaces (website, social media share images) without the user's name
-- **Allow with my name**: admin may feature this post with the user's display name attached
+- **Anonymous**: post is featured without the author's name
+- **With name**: post is featured with the user's display name attached
 
-A post with anonymous=true and named=false can be featured but only without identifying the author.
-A post with both true gives admin the choice at share time.
-A post with both false is fully private — admin can see it (for moderation) but cannot publish it anywhere.
-
-Users can toggle these on past posts from the history view at any time. Revoking permission on a previously-featured post triggers an admin notification.
+Admin picks the display mode when featuring. Users have no pre-share toggle to flip; the admin exercises editorial judgment on what to feature. A user who wants a featured post removed should contact support.
 
 ## Moderation
 

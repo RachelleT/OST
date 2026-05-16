@@ -27,7 +27,7 @@ function PromptModal({
 }: {
   state: ModalState
   onClose: () => void
-  onSave: (text: string) => Promise<void>
+  onSave: (text: string) => Promise<string | null>
 }) {
   const [text, setText] = useState(state.text)
   const [saving, setSaving] = useState(false)
@@ -42,8 +42,9 @@ function PromptModal({
     }
     setSaving(true)
     setError('')
-    await onSave(text.trim())
+    const err = await onSave(text.trim())
     setSaving(false)
+    if (err) setError(err)
   }
 
   return (
@@ -52,7 +53,7 @@ function PromptModal({
       style={{ background: 'rgba(0,0,0,0.4)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl p-6 space-y-4">
+      <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl p-6 space-y-4 overflow-hidden">
         <h2 className="text-base font-semibold text-gray-900">
           {isEdit ? 'Edit prompt' : 'New prompt'}
         </h2>
@@ -140,14 +141,17 @@ export default function AdminPrompts() {
     setModal({ open: true, id: p.id, text: p.text })
   }
 
-  async function handleSave(text: string) {
+  async function handleSave(text: string): Promise<string | null> {
     if (modal.id) {
-      await supabase.rpc('admin_update_prompt', { p_id: modal.id, p_text: text })
+      const { error } = await supabase.rpc('admin_update_prompt', { p_id: modal.id, p_text: text })
+      if (error) return error.message
     } else {
-      await supabase.rpc('admin_create_prompt', { p_text: text })
+      const { error } = await supabase.rpc('admin_create_prompt', { p_text: text })
+      if (error) return error.message
     }
     setModal({ open: false, id: null, text: '' })
     load()
+    return null
   }
 
   async function toggleActive(p: Prompt) {
@@ -158,7 +162,7 @@ export default function AdminPrompts() {
   }
 
   return (
-    <div className="px-6 py-8 max-w-3xl">
+    <div className="px-5 py-8 w-full max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-semibold text-gray-900">Prompts</h1>
         <button

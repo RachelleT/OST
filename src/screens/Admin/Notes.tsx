@@ -26,14 +26,14 @@ const MAX = 140
 const MIN = 3
 
 const DOW_OPTIONS: { label: string; value: number | null }[] = [
-  { label: 'Any day',   value: null },
-  { label: 'Monday',    value: 0 },
-  { label: 'Tuesday',   value: 1 },
-  { label: 'Wednesday', value: 2 },
-  { label: 'Thursday',  value: 3 },
-  { label: 'Friday',    value: 4 },
-  { label: 'Saturday',  value: 5 },
-  { label: 'Sunday',    value: 6 },
+  { label: 'Any', value: null },
+  { label: 'Mon', value: 0 },
+  { label: 'Tue', value: 1 },
+  { label: 'Wed', value: 2 },
+  { label: 'Thu', value: 3 },
+  { label: 'Fri', value: 4 },
+  { label: 'Sat', value: 5 },
+  { label: 'Sun', value: 6 },
 ]
 
 const DOW_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
@@ -45,7 +45,7 @@ function NoteModal({
 }: {
   state: ModalState
   onClose: () => void
-  onSave: (text: string, pool: Pool, dow: number | null) => Promise<void>
+  onSave: (text: string, pool: Pool, dow: number | null) => Promise<string | null>
 }) {
   const [text, setText] = useState(state.text)
   const [pool, setPool] = useState<Pool>(state.pool)
@@ -62,8 +62,9 @@ function NoteModal({
     }
     setSaving(true)
     setError('')
-    await onSave(text.trim(), pool, dow)
+    const err = await onSave(text.trim(), pool, dow)
     setSaving(false)
+    if (err) setError(err)
   }
 
   return (
@@ -72,7 +73,7 @@ function NoteModal({
       style={{ background: 'rgba(0,0,0,0.4)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl p-6 space-y-4">
+      <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl p-6 space-y-4 overflow-hidden">
         <h2 className="text-base font-semibold text-gray-900">
           {isEdit ? 'Edit note' : 'New note'}
         </h2>
@@ -205,18 +206,21 @@ export default function AdminNotes() {
     setModal({ open: true, id: n.id, text: n.text, pool: n.pool, day_of_week: n.day_of_week })
   }
 
-  async function handleSave(text: string, pool: Pool, dow: number | null) {
+  async function handleSave(text: string, pool: Pool, dow: number | null): Promise<string | null> {
     if (modal.id) {
-      await supabase.rpc('admin_update_note', {
+      const { error } = await supabase.rpc('admin_update_note', {
         p_id: modal.id, p_text: text, p_day_of_week: dow,
       })
+      if (error) return error.message
     } else {
-      await supabase.rpc('admin_create_note', {
+      const { error } = await supabase.rpc('admin_create_note', {
         p_text: text, p_pool: pool, p_day_of_week: dow,
       })
+      if (error) return error.message
     }
     setModal({ open: false, id: null, text: '', pool: activePool, day_of_week: null })
     load()
+    return null
   }
 
   async function toggleActive(n: Note) {
@@ -227,7 +231,7 @@ export default function AdminNotes() {
   }
 
   return (
-    <div className="px-6 py-8 max-w-3xl">
+    <div className="px-5 py-8 w-full max-w-3xl">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-semibold text-gray-900">Notes</h1>
         <button

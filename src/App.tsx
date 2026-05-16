@@ -17,6 +17,7 @@ import AdminNotes from './screens/Admin/Notes'
 import AdminPosts from './screens/Admin/Posts'
 import AdminFeatured from './screens/Admin/Featured'
 import AdminAdmins from './screens/Admin/Admins'
+import PublicPost from './screens/PublicPost'
 
 function Spinner() {
   return (
@@ -93,6 +94,15 @@ export default function App() {
   }
 
   if (window.location.pathname === '/palette-debug') return <PaletteDebug />
+  if (window.location.pathname.startsWith('/p/')) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/p/:postId" element={<PublicPost />} />
+        </Routes>
+      </BrowserRouter>
+    )
+  }
   if (isLoading) return <Spinner />
 
   if (!user) {
