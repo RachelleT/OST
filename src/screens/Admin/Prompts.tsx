@@ -55,7 +55,7 @@ function PromptModal({
       style={{ background: 'rgba(0,0,0,0.4)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-white w-full max-w-lg mx-4 rounded-3xl p-6 space-y-4 max-h-[90dvh] overflow-y-auto">
+      <div className="bg-white w-full max-w-lg mx-4 rounded-3xl p-6 space-y-4 max-h-[90svh] overflow-y-auto">
         <h2 className="text-base font-semibold text-gray-900">
           {isEdit ? 'Edit prompt' : 'New prompt'}
         </h2>
