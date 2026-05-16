@@ -137,8 +137,19 @@ function PostActionSheet({
     setShowModePicker(true)
   }
 
-  function copyLink() {
-    navigator.clipboard.writeText(`${window.location.origin}/p/${post.id}`)
+  async function copyLink() {
+    const url = `${window.location.origin}/p/${post.id}`
+    try {
+      await navigator.clipboard.writeText(url)
+    } catch {
+      const el = document.createElement('textarea')
+      el.value = url
+      el.style.cssText = 'position:fixed;opacity:0'
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+    }
     setCopyDone(true)
     setTimeout(() => setCopyDone(false), 2000)
   }

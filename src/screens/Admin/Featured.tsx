@@ -44,8 +44,19 @@ export default function AdminFeatured() {
     load()
   }
 
-  function copyLink(postId: string) {
-    navigator.clipboard.writeText(`${window.location.origin}/p/${postId}`)
+  async function copyLink(postId: string) {
+    const url = `${window.location.origin}/p/${postId}`
+    try {
+      await navigator.clipboard.writeText(url)
+    } catch {
+      const el = document.createElement('textarea')
+      el.value = url
+      el.style.cssText = 'position:fixed;opacity:0'
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+    }
   }
 
   if (loading) {
