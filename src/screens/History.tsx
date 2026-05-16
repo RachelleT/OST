@@ -5,6 +5,7 @@ import { dayPalette } from '../lib/palette'
 import { calculateStreaks } from '../lib/streak'
 import { weekStart, weekDays, toISODate } from '../lib/date'
 import { useProfile } from '../lib/ProfileContext'
+import { useAuth } from '../hooks/useAuth'
 import SharingToggles from '../components/SharingToggles'
 
 interface PostRow {
@@ -47,6 +48,7 @@ const NEUTRAL_BG = '#F1EFE8'
 
 export default function History() {
   const profile = useProfile()
+  const { user } = useAuth()
   const [posts, setPosts] = useState<PostRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -56,15 +58,17 @@ export default function History() {
   }
 
   useEffect(() => {
+    if (!user) return
     supabase
       .from('posts')
       .select('id, date, text, photo_url, moderation_status, share_anonymous, share_with_name, prompts(text)')
+      .eq('user_id', user.id)
       .order('date', { ascending: false })
       .then(({ data }) => {
         setPosts((data as unknown as PostRow[]) ?? [])
         setIsLoading(false)
       })
-  }, [])
+  }, [user])
 
   const dates = posts.map(p => p.date)
   const { current, longest } = calculateStreaks(dates)

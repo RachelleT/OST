@@ -121,12 +121,12 @@ export default function AdminLayout() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center gap-0.5 py-2 text-xs font-medium transition-colors ${
+              `flex-1 flex flex-col items-center justify-center gap-1 py-3 text-xs font-medium transition-colors ${
                 isActive ? 'text-[#04342C]' : 'text-gray-400'
               }`
             }
           >
-            <span aria-hidden="true" className="relative text-xl leading-none">
+            <span aria-hidden="true" className="relative text-2xl leading-none">
               {icon}
               {badge != null && (
                 <span className="absolute -top-1 -right-2 text-[9px] font-bold px-1 rounded-full bg-red-500 text-white leading-tight">

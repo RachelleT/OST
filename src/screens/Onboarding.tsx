@@ -18,7 +18,7 @@ export default function Onboarding({ onComplete }: Props) {
   const [reminderValue, setReminderValue] = useState<string | null>('20:00')
 
   async function next() {
-    if (step < 2) { setStep(s => s + 1); return }
+    if (step < 3) { setStep(s => s + 1); return }
 
     // Save reminder time to DB
     const { data: { user } } = await supabase.auth.getUser()
@@ -35,7 +35,7 @@ export default function Onboarding({ onComplete }: Props) {
     <div className="min-h-full flex flex-col px-6 py-12" style={{ background: '#FAF5EC' }}>
       {/* Progress dots */}
       <div className="flex justify-center gap-2 mb-10">
-        {[0, 1, 2].map(i => (
+        {[0, 1, 2, 3].map(i => (
           <div
             key={i}
             className="w-2 h-2 rounded-full transition-colors"
@@ -121,6 +121,41 @@ export default function Onboarding({ onComplete }: Props) {
             </fieldset>
           </motion.div>
         )}
+
+        {step === 3 && (
+          <motion.div key="step3" {...slide} className="flex-1 flex flex-col justify-center space-y-6">
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
+                Add to your home screen
+              </h2>
+              <p className="text-sm text-gray-500">
+                For the best experience, install the app so it's always one tap away.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div className="rounded-2xl bg-white p-4 space-y-2">
+                <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                  <span aria-hidden="true">🍎</span> iPhone
+                </p>
+                <ol className="text-sm text-gray-600 space-y-1 list-none">
+                  <li>1. Open in <strong>Safari</strong></li>
+                  <li>2. Tap the <strong>Share</strong> button <span className="text-gray-400">(box with arrow at the bottom)</span></li>
+                  <li>3. Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                </ol>
+              </div>
+              <div className="rounded-2xl bg-white p-4 space-y-2">
+                <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                  <span aria-hidden="true">🤖</span> Android
+                </p>
+                <ol className="text-sm text-gray-600 space-y-1 list-none">
+                  <li>1. Open in <strong>Chrome</strong></li>
+                  <li>2. Tap the <strong>⋮ menu</strong> in the top right</li>
+                  <li>3. Tap <strong>"Add to Home screen"</strong></li>
+                </ol>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <button
@@ -128,7 +163,7 @@ export default function Onboarding({ onComplete }: Props) {
         className="mt-8 w-full rounded-full py-4 text-sm font-medium text-white transition-transform active:scale-95"
         style={{ background: '#04342C' }}
       >
-        {step < 2 ? 'Next' : 'Get started'}
+        {step < 3 ? 'Next' : 'Get started'}
       </button>
     </div>
   )
