@@ -97,18 +97,15 @@ export function useTodayPost(): UseTodayPost {
       const { data } = await supabase
         .from('posts')
         .select('*')
-        .order('date', { ascending: false })
-        .limit(1)
+        .eq('date', today)
         .maybeSingle()
 
       if (cancelled) return
       if (data) {
         const p = rowToPost(data as Record<string, unknown>)
-        if (p.date === today || isPostFromToday(p)) {
-          setPost(p)
-          setIsEditable(isWithinEditWindow(p))
-          savePostCache(p)
-        }
+        setPost(p)
+        setIsEditable(isWithinEditWindow(p))
+        savePostCache(p)
       }
       setIsLoading(false)
     }
