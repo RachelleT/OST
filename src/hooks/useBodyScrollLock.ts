@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 
-// iOS scrolls background containers when a textarea inside a fixed modal
-// gains focus. We attach a scroll listener that immediately resets scrollTop
-// back to the saved value for the lifetime of the modal, then clean up.
+// iOS scrolls background containers when an input inside a fixed modal is
+// focused (keyboard appears). We listen to both scroll and visualViewport
+// resize/scroll events and immediately reset scrollTop back to the saved value.
 export function useBodyScrollLock() {
   useEffect(() => {
     const els = [
@@ -12,19 +12,25 @@ export function useBodyScrollLock() {
 
     const saved = els.map(el => ({ el, scrollTop: el.scrollTop }))
 
-    function cancelScroll({ el, scrollTop }: { el: HTMLElement; scrollTop: number }) {
-      el.scrollTop = scrollTop
+    function restore() {
+      saved.forEach(({ el, scrollTop }) => { el.scrollTop = scrollTop })
     }
 
-    const handlers = saved.map(entry => {
-      const handler = () => cancelScroll(entry)
-      entry.el.addEventListener('scroll', handler, { passive: true })
-      return { el: entry.el, handler }
-    })
+    els.forEach(el => el.addEventListener('scroll', restore, { passive: true }))
+
+    const vv = window.visualViewport
+    if (vv) {
+      vv.addEventListener('resize', restore)
+      vv.addEventListener('scroll', restore)
+    }
 
     return () => {
-      handlers.forEach(({ el, handler }) => el.removeEventListener('scroll', handler))
-      saved.forEach(({ el, scrollTop }) => { el.scrollTop = scrollTop })
+      els.forEach(el => el.removeEventListener('scroll', restore))
+      if (vv) {
+        vv.removeEventListener('resize', restore)
+        vv.removeEventListener('scroll', restore)
+      }
+      restore()
     }
   }, [])
 }

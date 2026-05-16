@@ -22,10 +22,14 @@ body {
   overflow: hidden;
 }
 
-/* Fixed root prevents the app from resizing when the iOS keyboard appears */
+/* Fixed root — avoids bottom:0 which iOS resizes when keyboard appears */
 #root {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;    /* fallback */
+  height: 100lvh;   /* large viewport height: stable, never shrinks with keyboard */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
