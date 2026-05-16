@@ -106,6 +106,10 @@ export function useTodayPost(): UseTodayPost {
         setPost(p)
         setIsEditable(isWithinEditWindow(p))
         savePostCache(p)
+      } else {
+        // No post for today — clear any stale cached post from a previous day
+        setPost(null)
+        try { localStorage.removeItem(POST_CACHE_KEY) } catch {}
       }
       setIsLoading(false)
     }
