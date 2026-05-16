@@ -76,11 +76,11 @@ export default function History() {
 
   // Build 6-week grid ending today
   const today = new Date()
-  const monday = weekStart(today)
+  const sunday = weekStart(today)
   const weeks: Date[][] = Array.from({ length: 6 }, (_, i) => {
-    const weekMonday = new Date(monday)
-    weekMonday.setDate(monday.getDate() - (5 - i) * 7)
-    return weekDays(weekMonday)
+    const weekSunday = new Date(sunday)
+    weekSunday.setDate(sunday.getDate() - (5 - i) * 7)
+    return weekDays(weekSunday)
   })
 
   // Group posts by week label for the list below
@@ -116,7 +116,7 @@ export default function History() {
         <div>
           {/* Day labels */}
           <div className="grid grid-cols-7 mb-1">
-            {['M','T','W','T','F','S','S'].map((d, i) => (
+            {['S','M','T','W','T','F','S'].map((d, i) => (
               <p key={i} className="text-center text-xs text-gray-400 font-medium">{d}</p>
             ))}
           </div>

@@ -56,21 +56,19 @@ export function isSameDay(a: string, b: string): boolean {
 // for display-only purposes where we show the user their own history)
 // ----------------------------------------------------------------
 
-/** Returns the Monday of the week containing the given Date (local time). */
+/** Returns the Sunday of the week containing the given Date (local time). */
 export function weekStart(date: Date): Date {
   const d = new Date(date)
-  const day = d.getDay()
-  const diff = day === 0 ? -6 : 1 - day
-  d.setDate(d.getDate() + diff)
+  d.setDate(d.getDate() - d.getDay())
   d.setHours(0, 0, 0, 0)
   return d
 }
 
-/** Returns 7 Dates starting from the given Monday (local time). */
-export function weekDays(monday: Date): Date[] {
+/** Returns 7 Dates starting from the given Sunday (local time). */
+export function weekDays(sunday: Date): Date[] {
   return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday)
-    d.setDate(monday.getDate() + i)
+    const d = new Date(sunday)
+    d.setDate(sunday.getDate() + i)
     return d
   })
 }
