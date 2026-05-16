@@ -112,31 +112,33 @@ export default function AdminLayout() {
 
       {/* Bottom tab bar — mobile, fixed */}
       <nav
-        className="md:hidden fixed bottom-0 inset-x-0 z-10 flex items-end border-t bg-white pb-safe"
+        className="md:hidden fixed bottom-0 inset-x-0 z-10 border-t bg-white pb-safe"
         style={{ borderColor: '#e5e7eb' }}
         aria-label="Admin navigation"
       >
-        {NAV_ITEMS.map(({ to, label, icon, badge }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors ${
-                isActive ? 'text-[#04342C]' : 'text-gray-400'
-              }`
-            }
-          >
-            <span aria-hidden="true" className="relative text-lg leading-none">
-              {icon}
-              {badge != null && (
-                <span className="absolute -top-1 -right-2 text-[9px] font-bold px-1 rounded-full bg-red-500 text-white leading-tight">
-                  {badge}
-                </span>
-              )}
-            </span>
-            {label}
-          </NavLink>
-        ))}
+        <div className="h-16 flex items-center">
+          {NAV_ITEMS.map(({ to, label, icon, badge }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors ${
+                  isActive ? 'text-[#04342C]' : 'text-gray-400'
+                }`
+              }
+            >
+              <span aria-hidden="true" className="relative text-lg leading-none">
+                {icon}
+                {badge != null && (
+                  <span className="absolute -top-1 -right-2 text-[9px] font-bold px-1 rounded-full bg-red-500 text-white leading-tight">
+                    {badge}
+                  </span>
+                )}
+              </span>
+              {label}
+            </NavLink>
+          ))}
+        </div>
       </nav>
     </div>
   )

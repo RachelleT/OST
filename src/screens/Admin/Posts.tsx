@@ -193,7 +193,7 @@ function PostActionSheet({
       style={{ background: 'rgba(0,0,0,0.45)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-white w-full max-w-lg rounded-3xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white w-full max-w-lg mx-4 rounded-3xl overflow-hidden flex flex-col max-h-[90vh]">
 
         {/* Header */}
         <div className="px-5 py-3 flex items-center justify-between shrink-0" style={{ background: palette.bg }}>

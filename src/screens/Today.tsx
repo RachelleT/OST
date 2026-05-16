@@ -185,7 +185,7 @@ export default function Today() {
       </div>
 
       {/* Neutral space below colored section */}
-      <div className="flex-1 flex flex-col px-5 py-6">
+      <div className="flex-1 flex flex-col px-5 py-10">
         <p
           className="mt-auto text-center text-xs font-medium"
           style={{ color: '#04342C', opacity: 0.3 }}
