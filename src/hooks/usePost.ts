@@ -33,6 +33,8 @@ export interface Post {
   text: string | null
   photoUrl: string | null
   moderationStatus: string
+  shareAnon: boolean
+  shareNamed: boolean
   createdAt: string
   updatedAt: string
 }
@@ -42,6 +44,8 @@ interface SubmitArgs {
   text: string
   photoFile: File | null
   keepPhotoUrl?: string | null
+  shareAnon: boolean
+  shareNamed: boolean
 }
 
 interface UsePost {
@@ -65,6 +69,8 @@ function rowToPost(data: Record<string, unknown>): Post {
     text: data.text as string | null,
     photoUrl: data.photo_url as string | null,
     moderationStatus: (data.moderation_status as string | undefined) ?? 'pending',
+    shareAnon: (data.share_anonymous as boolean | undefined) ?? false,
+    shareNamed: (data.share_with_name as boolean | undefined) ?? false,
     createdAt: data.created_at as string,
     updatedAt: data.updated_at as string,
   }
@@ -132,7 +138,7 @@ export function usePost(): UsePost {
   const timezone = useTimezone()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  async function submit({ promptId, text, photoFile, keepPhotoUrl }: SubmitArgs): Promise<{ post: Post | null; graceUsed: boolean; error: string | null }> {
+  async function submit({ promptId, text, photoFile, keepPhotoUrl, shareAnon, shareNamed }: SubmitArgs): Promise<{ post: Post | null; graceUsed: boolean; error: string | null }> {
     setIsSubmitting(true)
     try {
       const { data: authData } = await supabase.auth.getUser()
@@ -160,12 +166,14 @@ export function usePost(): UsePost {
       const { data: savedPost, error: saveError } = await supabase
         .from('posts')
         .upsert({
-          user_id:        user.id,
-          prompt_id:      promptId,
-          date:           today,
-          text:           text || null,
-          photo_url:      photoUrl,
-          updated_at:     new Date().toISOString(),
+          user_id:          user.id,
+          prompt_id:        promptId,
+          date:             today,
+          text:             text || null,
+          photo_url:        photoUrl,
+          share_anonymous:  shareAnon,
+          share_with_name:  shareNamed,
+          updated_at:       new Date().toISOString(),
         }, { onConflict: 'user_id,date' })
         .select()
         .single()
@@ -177,8 +185,8 @@ export function usePost(): UsePost {
         p_prompt_id:  promptId,
         p_text:       text || '',
         p_photo_url:  photoUrl ?? '',
-        p_share_anon: false,
-        p_share_named: false,
+        p_share_anon: shareAnon,
+        p_share_named: shareNamed,
       })
       const rawRpc = (Array.isArray(rpcData) ? rpcData[0] : rpcData) as Record<string, unknown> | null
       graceUsed = (rawRpc?.grace_used as boolean) ?? false

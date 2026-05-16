@@ -1,6 +1,8 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { useProfile } from '../../lib/ProfileContext'
+import { supabase } from '../../lib/supabase'
 
 const ADMIN_BG = '#F1EFE8'
 const ACCENT = '#04342C'
@@ -9,20 +11,34 @@ interface NavItem {
   to: string
   label: string
   icon: string
+  badge?: number
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { to: '/admin/prompts',  label: 'Prompts',  icon: '✦' },
-  { to: '/admin/notes',    label: 'Notes',    icon: '🌱' },
-  { to: '/admin/posts',    label: 'Posts',    icon: '📋' },
-  { to: '/admin/featured', label: 'Featured', icon: '⭐' },
-  { to: '/admin/admins',   label: 'Admins',   icon: '🔑' },
+const BASE_NAV: Omit<NavItem, 'badge'>[] = [
+  { to: '/admin/prompts',     label: 'Prompts',    icon: '✦' },
+  { to: '/admin/notes',       label: 'Notes',      icon: '🌱' },
+  { to: '/admin/posts',       label: 'Posts',      icon: '📋' },
+  { to: '/admin/featured',    label: 'Featured',   icon: '⭐' },
+  { to: '/admin/moderation',  label: 'Moderation', icon: '🛡️' },
+  { to: '/admin/admins',      label: 'Admins',     icon: '🔑' },
 ]
 
 export default function AdminLayout() {
   const { signOut } = useAuth()
   const profile = useProfile()
   const navigate = useNavigate()
+  const [moderationCount, setModerationCount] = useState(0)
+
+  useEffect(() => {
+    supabase.rpc('get_moderation_queue_count').then(({ data }) => {
+      if (typeof data === 'number') setModerationCount(data)
+    })
+  }, [])
+
+  const NAV_ITEMS: NavItem[] = BASE_NAV.map(item => ({
+    ...item,
+    badge: item.to === '/admin/moderation' && moderationCount > 0 ? moderationCount : undefined,
+  }))
 
   async function handleSignOut() {
     await signOut()
@@ -65,7 +81,7 @@ export default function AdminLayout() {
           style={{ borderColor: '#e5e7eb' }}
           aria-label="Admin navigation"
         >
-          {NAV_ITEMS.map(({ to, label, icon }) => (
+          {NAV_ITEMS.map(({ to, label, icon, badge }) => (
             <NavLink
               key={to}
               to={to}
@@ -79,6 +95,11 @@ export default function AdminLayout() {
             >
               <span aria-hidden="true">{icon}</span>
               {label}
+              {badge != null && (
+                <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">
+                  {badge}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -95,7 +116,7 @@ export default function AdminLayout() {
         style={{ borderColor: '#e5e7eb' }}
         aria-label="Admin navigation"
       >
-        {NAV_ITEMS.map(({ to, label, icon }) => (
+        {NAV_ITEMS.map(({ to, label, icon, badge }) => (
           <NavLink
             key={to}
             to={to}
@@ -105,7 +126,14 @@ export default function AdminLayout() {
               }`
             }
           >
-            <span aria-hidden="true" className="text-base">{icon}</span>
+            <span aria-hidden="true" className="relative text-base">
+              {icon}
+              {badge != null && (
+                <span className="absolute -top-1 -right-2 text-[9px] font-bold px-1 rounded-full bg-red-500 text-white leading-tight">
+                  {badge}
+                </span>
+              )}
+            </span>
             {label}
           </NavLink>
         ))}

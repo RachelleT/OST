@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase'
 import { dayPalette } from '../lib/palette'
 import { calculateStreaks } from '../lib/streak'
 import { weekStart, weekDays, toISODate } from '../lib/date'
+import { useProfile } from '../lib/ProfileContext'
+import SharingToggles from '../components/SharingToggles'
 
 interface PostRow {
   id: string
@@ -11,6 +13,8 @@ interface PostRow {
   text: string | null
   photo_url: string | null
   moderation_status: string
+  share_anonymous: boolean
+  share_with_name: boolean
   prompts: { text: string }[] | null
 }
 
@@ -42,13 +46,19 @@ function HistoryPhoto({ storagePath }: { storagePath: string }) {
 const NEUTRAL_BG = '#F1EFE8'
 
 export default function History() {
+  const profile = useProfile()
   const [posts, setPosts] = useState<PostRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
+
+  async function updateShare(postId: string, field: 'share_anonymous' | 'share_with_name', value: boolean) {
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, [field]: value } : p))
+    await supabase.from('posts').update({ [field]: value }).eq('id', postId)
+  }
 
   useEffect(() => {
     supabase
       .from('posts')
-      .select('id, date, text, photo_url, moderation_status, prompts(text)')
+      .select('id, date, text, photo_url, moderation_status, share_anonymous, share_with_name, prompts(text)')
       .order('date', { ascending: false })
       .then(({ data }) => {
         setPosts((data as unknown as PostRow[]) ?? [])
@@ -189,6 +199,17 @@ export default function History() {
                             {post.photo_url && (
                               <HistoryPhoto storagePath={post.photo_url} />
                             )}
+                            <div className="mt-3">
+                              <SharingToggles
+                                shareAnon={post.share_anonymous}
+                                shareNamed={post.share_with_name}
+                                displayName={profile?.displayName ?? ''}
+                                onChangeAnon={v => updateShare(post.id, 'share_anonymous', v)}
+                                onChangeNamed={v => updateShare(post.id, 'share_with_name', v)}
+                                accent={p.accent}
+                                bg="#F3F4F6"
+                              />
+                            </div>
                           </>
                         )}
                       </div>

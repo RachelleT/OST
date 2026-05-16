@@ -17,6 +17,7 @@ import AdminNotes from './screens/Admin/Notes'
 import AdminPosts from './screens/Admin/Posts'
 import AdminFeatured from './screens/Admin/Featured'
 import AdminAdmins from './screens/Admin/Admins'
+import AdminModeration from './screens/Admin/Moderation'
 import PublicPost from './screens/PublicPost'
 
 function Spinner() {
@@ -57,8 +58,9 @@ function AdminApp() {
           <Route path="prompts"  element={<AdminPrompts />} />
           <Route path="notes"    element={<AdminNotes />} />
           <Route path="posts"    element={<AdminPosts />} />
-          <Route path="featured" element={<AdminFeatured />} />
-          <Route path="admins"   element={<AdminAdmins />} />
+          <Route path="featured"    element={<AdminFeatured />} />
+          <Route path="admins"      element={<AdminAdmins />} />
+          <Route path="moderation"  element={<AdminModeration />} />
         </Route>
       </Routes>
     </RequireAdmin>

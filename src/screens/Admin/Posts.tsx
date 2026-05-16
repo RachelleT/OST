@@ -26,7 +26,23 @@ interface Metrics {
   hiddenPosts: number
 }
 
-type FilterTab = 'today' | 'week' | 'all' | 'hidden'
+type FilterTab = 'today' | 'week' | 'all' | 'featurable' | 'hidden'
+
+function eligibilityInfo(post: AdminPost): { label: string; bg: string; color: string } | null {
+  if (post.moderation_status === 'hidden')  return null // hidden badge already shown separately
+  if (post.moderation_status === 'held')    return { label: 'Held',           bg: '#FEF3C7', color: '#92400E' }
+  if (post.moderation_status === 'pending') return { label: 'Pending review', bg: '#F3F4F6', color: '#6B7280' }
+  if (post.share_anonymous || post.share_with_name)
+    return { label: 'Featurable', bg: '#D1FAE5', color: '#065F46' }
+  return { label: 'Private', bg: '#F3F4F6', color: '#9CA3AF' }
+}
+
+function featureBlockReason(post: AdminPost): string | null {
+  if (post.moderation_status === 'held')    return 'Post is held for moderation review'
+  if (post.moderation_status === 'pending') return 'Moderation check is still running'
+  if (!post.share_anonymous && !post.share_with_name) return 'User has not granted share permission'
+  return null
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -378,16 +394,24 @@ function PostActionSheet({
                     {featureWorking ? '…' : 'Unfeature'}
                   </button>
                 </div>
-              ) : (
-                <button
-                  onClick={handleFeatureClick}
-                  disabled={featureWorking || showModePicker}
-                  className="w-full rounded-xl py-2.5 text-sm font-medium border disabled:opacity-40"
-                  style={{ borderColor: ACCENT, color: ACCENT }}
-                >
-                  {featureWorking ? '…' : 'Feature on website'}
-                </button>
-              )}
+              ) : (() => {
+                const blockReason = featureBlockReason(post)
+                return (
+                  <div>
+                    <button
+                      onClick={handleFeatureClick}
+                      disabled={featureWorking || showModePicker || blockReason !== null}
+                      className="w-full rounded-xl py-2.5 text-sm font-medium border disabled:opacity-40"
+                      style={{ borderColor: ACCENT, color: ACCENT }}
+                    >
+                      {featureWorking ? '…' : 'Feature on website'}
+                    </button>
+                    {blockReason && (
+                      <p className="text-xs text-gray-400 text-center mt-1">{blockReason}</p>
+                    )}
+                  </div>
+                )
+              })()}
 
               {/* Save as image */}
               <button
@@ -445,9 +469,10 @@ export default function AdminPosts() {
       .order('created_at', { ascending: false })
       .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1)
 
-    if (currentTab === 'today')  q = q.eq('date', todayUTC())
-    if (currentTab === 'week')   q = q.gte('date', weekStartUTC())
-    if (currentTab === 'hidden') q = q.eq('moderation_status', 'hidden')
+    if (currentTab === 'today')      q = q.eq('date', todayUTC())
+    if (currentTab === 'week')       q = q.gte('date', weekStartUTC())
+    if (currentTab === 'hidden')     q = q.eq('moderation_status', 'hidden')
+    if (currentTab === 'featurable') q = q.eq('moderation_status', 'approved').or('share_anonymous.eq.true,share_with_name.eq.true')
     if (searchText.trim())       q = q.ilike('text', `%${searchText.trim()}%`)
 
     const { data } = await q
@@ -484,10 +509,11 @@ export default function AdminPosts() {
   }
 
   const TABS: { key: FilterTab; label: string }[] = [
-    { key: 'today',  label: 'Today' },
-    { key: 'week',   label: 'This week' },
-    { key: 'all',    label: 'All time' },
-    { key: 'hidden', label: 'Hidden' },
+    { key: 'today',      label: 'Today' },
+    { key: 'week',       label: 'This week' },
+    { key: 'all',        label: 'All time' },
+    { key: 'featurable', label: 'Featurable' },
+    { key: 'hidden',     label: 'Hidden' },
   ]
 
   return (
@@ -559,6 +585,17 @@ export default function AdminPosts() {
                       {isHidden && (
                         <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-red-50 text-red-500">Hidden</span>
                       )}
+                      {!isHidden && (() => {
+                        const e = eligibilityInfo(post)
+                        return e ? (
+                          <span
+                            className="text-xs font-medium px-1.5 py-0.5 rounded-full"
+                            style={{ background: e.bg, color: e.color }}
+                          >
+                            {e.label}
+                          </span>
+                        ) : null
+                      })()}
                       {post.photo_url && (
                         <span className="text-xs text-gray-400">📷</span>
                       )}
