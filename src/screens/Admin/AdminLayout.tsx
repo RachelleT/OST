@@ -19,7 +19,7 @@ const BASE_NAV: Omit<NavItem, 'badge'>[] = [
   { to: '/admin/notes',       label: 'Notes',      icon: '🌱' },
   { to: '/admin/posts',       label: 'Posts',      icon: '📋' },
   { to: '/admin/featured',    label: 'Featured',   icon: '⭐' },
-  { to: '/admin/moderation',  label: 'Moderation', icon: '🛡️' },
+  { to: '/admin/moderation',  label: 'Queue',      icon: '🛡️' },
   { to: '/admin/admins',      label: 'Admins',     icon: '🔑' },
 ]
 
@@ -121,12 +121,12 @@ export default function AdminLayout() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center gap-1 py-3 text-xs font-medium transition-colors ${
+              `flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors ${
                 isActive ? 'text-[#04342C]' : 'text-gray-400'
               }`
             }
           >
-            <span aria-hidden="true" className="relative text-2xl leading-none">
+            <span aria-hidden="true" className="relative text-lg leading-none">
               {icon}
               {badge != null && (
                 <span className="absolute -top-1 -right-2 text-[9px] font-bold px-1 rounded-full bg-red-500 text-white leading-tight">
@@ -134,7 +134,7 @@ export default function AdminLayout() {
                 </span>
               )}
             </span>
-            <span className="sr-only">{label}</span>
+            {label}
           </NavLink>
         ))}
       </nav>
