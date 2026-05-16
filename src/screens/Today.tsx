@@ -107,7 +107,7 @@ export default function Today() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <p className="text-base font-semibold" style={{ color: palette.textOnBg }}>
-                Hey, {displayName ?? ''} ✨
+                Hey, {displayName ?? ''}!
               </p>
               <p className="text-xs mt-0.5" style={{ color: palette.textOnBg, opacity: 0.55 }}>
                 {format(today, 'EEEE, MMMM d')}
