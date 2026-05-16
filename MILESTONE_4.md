@@ -6,6 +6,57 @@ This is the **launch gate**. After M4 ships, the app is safe to open to a wider 
 
 Prerequisite: M1, M2, M2.1 complete. M3 complete and locked (no further changes to M3 — M4 fits around what M3 already shipped).
 
+---
+
+## As built — notable deviations from spec
+
+### Text moderation: keyword matching instead of OpenAI
+
+The spec called for OpenAI's Moderation endpoint. OpenAI wasn't available, and Perspective API (the next suggestion) was considered but rejected because Google announced it's sunsetting after 2026.
+
+**What was built instead**: a PL/pgSQL trigger on the `posts` table that runs keyword/regex pattern matching synchronously on insert and update. Categories: hate speech, sexual content (minors/non-consensual only), graphic violence, and wellbeing signals (self-harm language).
+
+Tradeoffs vs. OpenAI:
+- No external API dependency, no API key, no cost, no latency, never goes down
+- Less sophisticated — won't catch subtle or obfuscated content; only catches explicit keyword matches
+- False negatives are higher; false positives are lower (patterns are conservative)
+- Sufficient for a small, trusted user base at launch scale
+
+The wellbeing category works exactly as specced — posts are approved (not held), appear only in the admin Wellbeing tab, author is never told.
+
+### Image moderation: not implemented
+
+Skipped entirely. No Google Cloud Vision API key was set up. At current scale (small friend group), manual admin review of any flagged text posts is sufficient. Image moderation can be added later if the user base grows or a problematic pattern emerges.
+
+### Sharing model: opt-in to name only, not opt-in to sharing
+
+The spec had two toggles: "Allow anonymous use" and "Allow with my name" — both defaulting OFF, so posts were private unless the user opted in.
+
+**What was built instead**: all approved posts are featurable anonymously by default. The only user preference is a single toggle: "Show my name if featured" (defaults OFF = anonymous). This reflects the actual intent — the app is a journaling tool and featuring is the admin's curation job, not a user permission wall.
+
+Changes from original spec:
+- `share_anonymous` defaults to `true` for all posts (backfilled in migration 0019)
+- `share_with_name` is the only user-controlled flag
+- `featurable_posts` view: just `moderation_status = 'approved'` (no share flag condition)
+- `feature_post()` RPC: anonymous display always allowed; with-name display still requires `share_with_name = true`
+- Auto-unfeature trigger: only fires when `moderation_status` changes, not on share flag changes
+
+### PWA auto-update
+
+Added two improvements beyond the spec:
+- `skipWaiting` + `clients.claim()` in the service worker so new versions activate immediately after install (not on next tab close)
+- `controllerchange` listener in `main.tsx` that reloads the page when a new service worker takes over — open app instances get the update automatically without user action
+
+### Admin nav (mobile)
+
+Fixed to `height: 64` to match the main app nav. Labels removed on mobile (icons only) since 6 items was too wide for 375px; labels remain as `sr-only` for accessibility.
+
+### History screen
+
+Added explicit `.eq('user_id', user.id)` filter to the posts query. RLS should cover this but the explicit filter prevents admin users from seeing all users' posts in their own history view.
+
+---
+
 ## Important: M3 already shipped without M4 in mind
 
 M3 shipped the admin "Feature on website" flow with a UI that doesn't know about moderation status. That's fine. M4 fits around it:
