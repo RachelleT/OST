@@ -105,14 +105,14 @@ export default function AdminLayout() {
         </nav>
 
         {/* Main content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16 md:pb-0">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden md:pb-0">
           <Outlet />
         </main>
       </div>
 
-      {/* Bottom tab bar — mobile, fixed */}
+      {/* Bottom tab bar — in normal flow so iOS keyboard cannot move it */}
       <nav
-        className="md:hidden fixed bottom-0 inset-x-0 z-10 border-t bg-white pb-safe"
+        className="md:hidden shrink-0 border-t bg-white pb-safe"
         style={{ borderColor: '#e5e7eb' }}
         aria-label="Admin navigation"
       >
