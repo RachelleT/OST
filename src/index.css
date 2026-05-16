@@ -32,6 +32,7 @@ body {
   height: 100lvh;   /* large viewport height: stable, never shrinks with keyboard */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
 }
 
 /* Safe area utilities for notch / home indicator */
