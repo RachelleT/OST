@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { supabase } from '../../lib/supabase'
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock'
 
 interface Note {
   id: string
@@ -47,6 +48,7 @@ function NoteModal({
   onClose: () => void
   onSave: (text: string, pool: Pool, dow: number | null) => Promise<string | null>
 }) {
+  useBodyScrollLock()
   const [text, setText] = useState(state.text)
   const [pool, setPool] = useState<Pool>(state.pool)
   const [dow, setDow] = useState<number | null>(state.day_of_week)
@@ -73,7 +75,7 @@ function NoteModal({
       style={{ background: 'rgba(0,0,0,0.4)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl p-6 space-y-4 overflow-hidden">
+      <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl p-6 space-y-4 max-h-[90dvh] overflow-y-auto">
         <h2 className="text-base font-semibold text-gray-900">
           {isEdit ? 'Edit note' : 'New note'}
         </h2>

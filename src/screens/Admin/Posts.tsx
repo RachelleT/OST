@@ -3,6 +3,7 @@ import { format, startOfWeek } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { dayPalette } from '../../lib/palette'
 import ShareCard from '../../components/ShareCard'
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -105,6 +106,7 @@ function PostActionSheet({
   const [downloading, setDownloading] = useState(false)
   const [copyDone, setCopyDone] = useState(false)
 
+  useBodyScrollLock()
   const isHidden = post.moderation_status === 'hidden'
   const palette = dayPalette(new Date(post.date + 'T12:00:00'))
   const isFeatured = featuredMode !== undefined && featuredMode !== null
