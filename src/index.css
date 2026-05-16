@@ -30,6 +30,7 @@ body {
   right: 0;
   height: 100vh;    /* fallback */
   height: 100lvh;   /* large viewport height: stable, never shrinks with keyboard */
+  overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: none;
