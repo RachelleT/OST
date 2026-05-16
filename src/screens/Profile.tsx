@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
+import { useProfile } from '../lib/ProfileContext'
 import { useStreak } from '../hooks/useStreak'
 import {
   isPushSupported,
@@ -27,6 +29,8 @@ interface ProfileRow {
 export default function Profile() {
   const { user, signOut } = useAuth()
   const { current, longest } = useStreak()
+  const profileCtx = useProfile()
+  const navigate = useNavigate()
 
   const [profile, setProfile] = useState<ProfileRow | null>(null)
   const [displayName, setDisplayName] = useState('')
@@ -287,6 +291,15 @@ export default function Profile() {
         <div className="rounded-2xl bg-white p-4 shadow-sm space-y-1">
           <h2 className="text-sm font-semibold text-gray-700 mb-3">Account</h2>
           <p className="text-xs text-gray-400 mb-3">{user?.email}</p>
+          {profileCtx?.isAdmin && (
+            <button
+              onClick={() => navigate('/admin')}
+              className="w-full rounded-xl py-2.5 text-sm font-medium border transition-opacity active:opacity-70 mb-2"
+              style={{ borderColor: '#04342C', color: '#04342C' }}
+            >
+              Admin dashboard
+            </button>
+          )}
           <button
             onClick={signOut}
             className="w-full rounded-xl py-2.5 text-sm font-medium text-red-600 border border-red-100 bg-red-50 transition-opacity active:opacity-70"

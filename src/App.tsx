@@ -10,6 +10,13 @@ import History from './screens/History'
 import Profile from './screens/Profile'
 import PaletteDebug from './screens/PaletteDebug'
 import BottomNav from './components/BottomNav'
+import RequireAdmin from './components/RequireAdmin'
+import AdminLayout from './screens/Admin/AdminLayout'
+import AdminPrompts from './screens/Admin/Prompts'
+import AdminNotes from './screens/Admin/Notes'
+import AdminPosts from './screens/Admin/Posts'
+import AdminFeatured from './screens/Admin/Featured'
+import AdminAdmins from './screens/Admin/Admins'
 
 function Spinner() {
   return (
@@ -40,6 +47,23 @@ function AuthedApp() {
   )
 }
 
+function AdminApp() {
+  return (
+    <RequireAdmin>
+      <Routes>
+        <Route element={<AdminLayout />}>
+          <Route index element={<Navigate to="/admin/prompts" replace />} />
+          <Route path="prompts"  element={<AdminPrompts />} />
+          <Route path="notes"    element={<AdminNotes />} />
+          <Route path="posts"    element={<AdminPosts />} />
+          <Route path="featured" element={<AdminFeatured />} />
+          <Route path="admins"   element={<AdminAdmins />} />
+        </Route>
+      </Routes>
+    </RequireAdmin>
+  )
+}
+
 export default function App() {
   const { user, isLoading } = useAuth()
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null)
@@ -50,7 +74,6 @@ export default function App() {
       setShowOnboarding(false)
       return
     }
-    // No local flag — check DB to see if this is actually a new account
     supabase
       .from('profiles')
       .select('created_at')
@@ -71,11 +94,20 @@ export default function App() {
 
   if (window.location.pathname === '/palette-debug') return <PaletteDebug />
   if (isLoading) return <Spinner />
-  if (!user) return <BrowserRouter><SignIn /></BrowserRouter>
+
+  if (!user) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="*" element={<SignIn />} />
+        </Routes>
+      </BrowserRouter>
+    )
+  }
+
   if (showOnboarding === null) return <Spinner />
 
   if (showOnboarding) {
-    // ProfileProvider needed here too so onboarding can access profile if needed
     return (
       <ProfileProvider>
         <Onboarding onComplete={completeOnboarding} />
@@ -86,7 +118,10 @@ export default function App() {
   return (
     <ProfileProvider>
       <BrowserRouter>
-        <AuthedApp />
+        <Routes>
+          <Route path="/admin/*" element={<AdminApp />} />
+          <Route path="*" element={<AuthedApp />} />
+        </Routes>
       </BrowserRouter>
     </ProfileProvider>
   )
