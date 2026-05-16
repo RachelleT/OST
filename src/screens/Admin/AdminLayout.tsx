@@ -113,7 +113,7 @@ export default function AdminLayout() {
       {/* Bottom tab bar — mobile, fixed */}
       <nav
         className="md:hidden fixed bottom-0 inset-x-0 z-10 flex border-t bg-white"
-        style={{ borderColor: '#e5e7eb' }}
+        style={{ borderColor: '#e5e7eb', height: 64 }}
         aria-label="Admin navigation"
       >
         {NAV_ITEMS.map(({ to, label, icon, badge }) => (

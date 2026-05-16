@@ -52,9 +52,9 @@ export default function History() {
   const [posts, setPosts] = useState<PostRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  async function updateShare(postId: string, field: 'share_anonymous' | 'share_with_name', value: boolean) {
-    setPosts(prev => prev.map(p => p.id === postId ? { ...p, [field]: value } : p))
-    await supabase.from('posts').update({ [field]: value }).eq('id', postId)
+  async function updateShareNamed(postId: string, value: boolean) {
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, share_with_name: value } : p))
+    await supabase.from('posts').update({ share_with_name: value }).eq('id', postId)
   }
 
   useEffect(() => {
@@ -205,11 +205,9 @@ export default function History() {
                             )}
                             <div className="mt-3">
                               <SharingToggles
-                                shareAnon={post.share_anonymous}
                                 shareNamed={post.share_with_name}
                                 displayName={profile?.displayName ?? ''}
-                                onChangeAnon={v => updateShare(post.id, 'share_anonymous', v)}
-                                onChangeNamed={v => updateShare(post.id, 'share_with_name', v)}
+                                onChangeNamed={v => updateShareNamed(post.id, v)}
                                 accent={p.accent}
                                 bg="#F3F4F6"
                               />

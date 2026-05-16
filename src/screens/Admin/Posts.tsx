@@ -29,18 +29,15 @@ interface Metrics {
 type FilterTab = 'today' | 'week' | 'all' | 'featurable' | 'hidden'
 
 function eligibilityInfo(post: AdminPost): { label: string; bg: string; color: string } | null {
-  if (post.moderation_status === 'hidden')  return null // hidden badge already shown separately
+  if (post.moderation_status === 'hidden')  return null
   if (post.moderation_status === 'held')    return { label: 'Held',           bg: '#FEF3C7', color: '#92400E' }
   if (post.moderation_status === 'pending') return { label: 'Pending review', bg: '#F3F4F6', color: '#6B7280' }
-  if (post.share_anonymous || post.share_with_name)
-    return { label: 'Featurable', bg: '#D1FAE5', color: '#065F46' }
-  return { label: 'Private', bg: '#F3F4F6', color: '#9CA3AF' }
+  return { label: 'Featurable', bg: '#D1FAE5', color: '#065F46' }
 }
 
 function featureBlockReason(post: AdminPost): string | null {
   if (post.moderation_status === 'held')    return 'Post is held for moderation review'
   if (post.moderation_status === 'pending') return 'Moderation check is still running'
-  if (!post.share_anonymous && !post.share_with_name) return 'User has not granted share permission'
   return null
 }
 
@@ -324,22 +321,26 @@ function PostActionSheet({
               {showModePicker && (
                 <div className="rounded-2xl bg-gray-50 p-4 space-y-2">
                   <p className="text-xs font-medium text-gray-600 mb-3">Display as…</p>
-                  {(['anonymous', 'with_name'] as const).map(mode => (
-                    <button
-                      key={mode}
-                      onClick={() => setPendingMode(mode)}
-                      className="w-full text-left rounded-xl px-4 py-2.5 text-sm border-2 transition-colors"
-                      style={{
-                        borderColor: pendingMode === mode ? ACCENT : 'transparent',
-                        background: pendingMode === mode ? '#E1F5EE' : 'white',
-                        color: pendingMode === mode ? ACCENT : '#374151',
-                      }}
-                    >
-                      {mode === 'anonymous'
-                        ? '🕵️ Anonymous'
-                        : `👤 ${post.profiles?.display_name ?? 'With name'}`}
-                    </button>
-                  ))}
+                  {(['anonymous', 'with_name'] as const).map(mode => {
+                    const nameBlocked = mode === 'with_name' && !post.share_with_name
+                    return (
+                      <button
+                        key={mode}
+                        onClick={() => !nameBlocked && setPendingMode(mode)}
+                        disabled={nameBlocked}
+                        className="w-full text-left rounded-xl px-4 py-2.5 text-sm border-2 transition-colors disabled:opacity-40"
+                        style={{
+                          borderColor: pendingMode === mode ? ACCENT : 'transparent',
+                          background: pendingMode === mode ? '#E1F5EE' : 'white',
+                          color: pendingMode === mode ? ACCENT : '#374151',
+                        }}
+                      >
+                        {mode === 'anonymous'
+                          ? '🕵️ Anonymous'
+                          : `👤 ${post.profiles?.display_name ?? 'With name'}${nameBlocked ? ' (user hasn\'t opted in)' : ''}`}
+                      </button>
+                    )
+                  })}
                   <div className="flex gap-2 pt-1">
                     <button
                       onClick={() => setShowModePicker(false)}
@@ -472,7 +473,7 @@ export default function AdminPosts() {
     if (currentTab === 'today')      q = q.eq('date', todayUTC())
     if (currentTab === 'week')       q = q.gte('date', weekStartUTC())
     if (currentTab === 'hidden')     q = q.eq('moderation_status', 'hidden')
-    if (currentTab === 'featurable') q = q.eq('moderation_status', 'approved').or('share_anonymous.eq.true,share_with_name.eq.true')
+    if (currentTab === 'featurable') q = q.eq('moderation_status', 'approved')
     if (searchText.trim())       q = q.ilike('text', `%${searchText.trim()}%`)
 
     const { data } = await q

@@ -33,10 +33,8 @@ function Toggle({ checked, onChange, disabled, accent, id }: ToggleProps) {
 }
 
 interface Props {
-  shareAnon: boolean
   shareNamed: boolean
   displayName: string
-  onChangeAnon: (v: boolean) => void
   onChangeNamed: (v: boolean) => void
   accent: string
   bg: string
@@ -44,34 +42,20 @@ interface Props {
 }
 
 export default function SharingToggles({
-  shareAnon,
   shareNamed,
   displayName,
-  onChangeAnon,
   onChangeNamed,
   accent,
   bg,
   disabled,
 }: Props) {
   return (
-    <div className="rounded-2xl p-3 space-y-3" style={{ background: bg }}>
-      <p className="text-[10px] font-semibold tracking-wider uppercase" style={{ color: accent }}>
-        Sharing
-      </p>
-
-      <div className="flex items-start justify-between gap-3">
-        <label htmlFor="toggle-anon" className="min-w-0 cursor-pointer">
-          <p className="text-xs font-medium text-gray-800">Allow anonymous use</p>
-          <p className="text-[11px] text-gray-400 leading-tight mt-0.5">May be featured without your name</p>
-        </label>
-        <Toggle id="toggle-anon" checked={shareAnon} onChange={onChangeAnon} disabled={disabled} accent={accent} />
-      </div>
-
+    <div className="rounded-2xl p-3" style={{ background: bg }}>
       <div className="flex items-start justify-between gap-3">
         <label htmlFor="toggle-named" className="min-w-0 cursor-pointer">
-          <p className="text-xs font-medium text-gray-800">Allow with my name</p>
+          <p className="text-xs font-medium text-gray-800">Show my name if featured</p>
           <p className="text-[11px] text-gray-400 leading-tight mt-0.5">
-            May be featured as '— {displayName || 'you'}'
+            Shown as '— {displayName || 'you'}' · off means anonymous
           </p>
         </label>
         <Toggle id="toggle-named" checked={shareNamed} onChange={onChangeNamed} disabled={disabled} accent={accent} />

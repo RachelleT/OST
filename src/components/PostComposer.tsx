@@ -26,7 +26,6 @@ export default function PostComposer({
 }: Props) {
   const profile = useProfile()
   const [text, setText] = useState(initialText)
-  const [shareAnon, setShareAnon] = useState(false)
   const [shareNamed, setShareNamed] = useState(false)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
@@ -93,7 +92,7 @@ export default function PostComposer({
         text: text.trim(),
         photoFile,
         keepPhotoUrl: keepPhotoPath,
-        shareAnon,
+        shareAnon: true,
         shareNamed,
       })
       if (error) {
@@ -192,10 +191,8 @@ export default function PostComposer({
         onChange={e => handlePhotoSelected(e.target.files?.[0] ?? null)} />
 
       <SharingToggles
-        shareAnon={shareAnon}
         shareNamed={shareNamed}
         displayName={profile?.displayName ?? ''}
-        onChangeAnon={setShareAnon}
         onChangeNamed={setShareNamed}
         accent={palette.accent}
         bg={palette.surface}
