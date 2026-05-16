@@ -90,7 +90,7 @@ function NoteModal({
             maxLength={MAX}
             rows={3}
             placeholder="Write a warm note (3–140 characters)…"
-            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2"
+            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-base text-gray-900 resize-none focus:outline-none focus:ring-2"
             style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
           />
           <div className="flex items-center justify-between mt-1">
