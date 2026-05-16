@@ -101,13 +101,25 @@ Three tabs: Today, History, You.
 - Inactive: muted (50% opacity of accent)
 - Today tab is the home/default
 
+### Warm note card
+
+A small soft card containing a single emoji + a short line of warmth. Sits below the post composer (empty state) or between the user's post and the "see you tomorrow" card (completed state).
+
+- Background: semi-transparent white (`rgba(255,255,255,0.55)`) for "soft" feel that lets the day color show through subtly
+- Border radius: 18px (matches the input card and other secondary surfaces)
+- Padding: 14px 16px
+- Layout: emoji on left (20px, no background), text on right
+- Two lines of text: the note itself (13px, weight 500, color = `--day-text-on-bg`) and a tiny subtitle (11px, opacity 0.7, e.g. "a little note for today" — fine to omit on the completed state since the tone is different)
+- Emoji per pool: 🌱 for empty state, 👀 for completed state (configurable later if you want per-note emoji; M2 keeps it simple)
+- No animation in or out. The note is static — never "appears" with motion. Reduces both fatigue and the chance it feels gimmicky.
+
 ## States
 
 ### Today empty (no post yet)
-Full color background, prompt, empty input with placeholder text, disabled-ish submit button.
+Full color background, prompt, empty input with placeholder text, disabled-ish submit button. Below the button, the warm note card (empty_state pool).
 
 ### Today completed (already posted)
-Same color background. Replace input with the user's posted text in a white card. Show "Done for today" green pill. Add a "See you tomorrow" card at the bottom with the next reminder time.
+Same color background. Replace input with the user's posted text in a white card. Show "Done for today" green pill. Show the warm note card (completed_state pool) below the post. End with the "See you tomorrow" card showing the next reminder time and tomorrow's color.
 
 ### Today missed grace consumed
 Same as completed but with a one-time toast: "We used your grace day for [date] — streak safe".

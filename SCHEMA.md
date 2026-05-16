@@ -37,6 +37,27 @@ create table prompts (
 );
 ```
 
+### `notes`
+M2.1 (display, hardcoded) + M3 (admin CRUD, DB-backed). Small lines of warmth shown on the Today screen.
+
+```sql
+create table notes (
+  id uuid primary key default gen_random_uuid(),
+  text text not null check (length(text) between 3 and 140),
+  pool text not null check (pool in ('empty_state', 'completed_state')),
+  day_of_week int check (day_of_week is null or day_of_week between 0 and 6),
+  active boolean not null default true,
+  created_by uuid references profiles(id),
+  created_at timestamptz not null default now()
+);
+
+create index on notes(pool, active) where active = true;
+```
+
+- `pool` separates "before posting" notes from "after posting" notes
+- `day_of_week`: 0=Monday..6=Sunday. NULL means the note works any day. Day-of-week-matching notes are preferred over untagged when both qualify.
+- Migration to add this table is part of M2.1 since the display code lands then. The admin CRUD UI in M3 reuses the same table.
+
 ### `daily_assignments`
 The prompt assigned to a user on a given date. Generated lazily on first today-screen open of the day.
 
@@ -139,6 +160,25 @@ create table push_subscriptions (
 );
 ```
 
+### `reminder_log`
+M2. One row per reminder sent. Powers the "one per day max" guarantee, the back-off logic, and debugging.
+
+```sql
+create table reminder_log (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references profiles(id) on delete cascade,
+  sent_for_date date not null, -- the user-local date this reminder was for
+  sent_at timestamptz not null default now(),
+  led_to_post boolean not null default false, -- set true if user posted that day after this reminder
+  created_at timestamptz not null default now(),
+  unique (user_id, sent_for_date) -- enforces one reminder per user per day
+);
+
+create index on reminder_log(user_id, sent_for_date desc);
+```
+
+The back-off logic reads the last 3 rows for a user: if all 3 have `led_to_post = false`, the user is in back-off (every-other-day cadence) until a row with `led_to_post = true` appears. The `send-reminders` Edge Function updates `led_to_post` — either when it next runs and sees a post happened, or the `submit_post` RPC can set it directly when a post is created on a day that had a reminder.
+
 ### `config`
 Single-row-per-key key/value store for instance-wide settings. M1.
 
@@ -174,20 +214,34 @@ create index on admin_invites(email) where consumed_at is null;
 Unlike bootstrap emails (which are always-on), `admin_invites` are one-time: once consumed, they don't re-promote on future sign-ins. If you want someone to be permanent admin even if demoted, add them to the bootstrap list.
 
 ### `admin_audit`
-M3. Every admin promotion/demotion logged here.
+M1+. Every admin action of consequence logged here. Extended in M3 to cover post/prompt actions.
 
 ```sql
 create table admin_audit (
   id uuid primary key default gen_random_uuid(),
-  target_user uuid not null references profiles(id),
-  action text not null check (action in ('promoted', 'demoted', 'invited', 'bootstrap_auto')),
+  target_user uuid references profiles(id), -- set for admin promotions/demotions
+  target_post uuid references posts(id),    -- set for post moderation events (M3+)
+  target_prompt uuid references prompts(id), -- set for prompt management events (M3+)
+  target_note uuid references notes(id),     -- set for note management events (M3+)
+  action text not null check (action in (
+    'promoted', 'demoted', 'invited', 'bootstrap_auto',
+    'post_hidden', 'post_unhidden', 'post_featured', 'post_unfeatured',
+    'prompt_created', 'prompt_edited', 'prompt_deactivated', 'prompt_reactivated',
+    'note_created', 'note_edited', 'note_deactivated', 'note_reactivated'
+  )),
   actor uuid references profiles(id), -- null for bootstrap_auto
   reason text, -- optional, e.g. "bootstrap list", "invited by X"
   created_at timestamptz not null default now()
 );
 
-create index on admin_audit(target_user, created_at desc);
+create index on admin_audit(target_user, created_at desc) where target_user is not null;
+create index on admin_audit(target_post, created_at desc) where target_post is not null;
+create index on admin_audit(target_prompt, created_at desc) where target_prompt is not null;
+create index on admin_audit(target_note, created_at desc) where target_note is not null;
+create index on admin_audit(created_at desc);
 ```
+
+For M1 the only `target_*` populated was `target_user`. M3 adds `target_post` and `target_prompt` (separate nullable columns rather than a polymorphic single column — simpler queries, simpler indexes).
 
 ## Row Level Security
 
@@ -231,6 +285,24 @@ create policy "anyone reads active prompts" on prompts
   );
 
 create policy "admins write prompts" on prompts
+  for all using (
+    exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+  );
+```
+
+### `notes`
+- Anyone authenticated can `select` active notes (needed to display them)
+- Only admins can insert/update/delete
+
+```sql
+alter table notes enable row level security;
+
+create policy "anyone reads active notes" on notes
+  for select using (active = true or
+    exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+  );
+
+create policy "admins write notes" on notes
   for all using (
     exists (select 1 from profiles where id = auth.uid() and is_admin = true)
   );
@@ -281,6 +353,19 @@ create policy "admins read all posts" on posts
 
 ### `push_subscriptions`
 - Users read/write own
+
+### `reminder_log`
+- Users can read their own rows (so the app can show "last reminded" info if useful)
+- Writes happen only via the `send-reminders` Edge Function (service role) and the `submit_post` RPC
+
+```sql
+alter table reminder_log enable row level security;
+
+create policy "users read own reminder log" on reminder_log
+  for select using (auth.uid() = user_id);
+
+-- writes only via service role / security-definer functions
+```
 
 ### `config`
 - Anyone authenticated can read (the bootstrap check needs it)
@@ -573,6 +658,137 @@ end $$;
 ```
 
 Note: the "last admin" check is a safety rail, not a security feature. The bootstrap email list is the real escape hatch — if you ever lock yourself out, edit the config row in SQL Editor and sign in again to re-promote.
+
+### Function: hide_post / unhide_post (M3)
+
+```sql
+create or replace function hide_post(post_id uuid, hide_reason text default null)
+returns void
+language plpgsql security definer as $$
+declare
+  v_actor_id uuid := auth.uid();
+  v_is_admin boolean;
+begin
+  select is_admin into v_is_admin from profiles where id = v_actor_id;
+  if not v_is_admin then raise exception 'not authorized'; end if;
+
+  update posts set moderation_status = 'hidden' where id = post_id;
+  insert into admin_audit (target_post, action, actor, reason)
+    values (post_id, 'post_hidden', v_actor_id, hide_reason);
+end $$;
+
+create or replace function unhide_post(post_id uuid)
+returns void
+language plpgsql security definer as $$
+declare
+  v_actor_id uuid := auth.uid();
+  v_is_admin boolean;
+begin
+  select is_admin into v_is_admin from profiles where id = v_actor_id;
+  if not v_is_admin then raise exception 'not authorized'; end if;
+
+  update posts set moderation_status = 'approved' where id = post_id;
+  insert into admin_audit (target_post, action, actor)
+    values (post_id, 'post_unhidden', v_actor_id);
+end $$;
+```
+
+### Function: feature_post / unfeature_post (M3)
+
+```sql
+create or replace function feature_post(post_id uuid, display_mode_arg text)
+returns featured_posts
+language plpgsql security definer as $$
+declare
+  v_actor_id uuid := auth.uid();
+  v_is_admin boolean;
+  v_post posts;
+  v_featured featured_posts;
+begin
+  select is_admin into v_is_admin from profiles where id = v_actor_id;
+  if not v_is_admin then raise exception 'not authorized'; end if;
+
+  if display_mode_arg not in ('anonymous', 'with_name') then
+    raise exception 'display_mode must be anonymous or with_name';
+  end if;
+
+  select * into v_post from posts where id = post_id;
+  if not found then raise exception 'post not found'; end if;
+
+  -- verify share permission matches requested display mode
+  if display_mode_arg = 'with_name' and not v_post.share_with_name then
+    raise exception 'user has not granted with-name share permission';
+  end if;
+  if display_mode_arg = 'anonymous' and not v_post.share_anonymous then
+    raise exception 'user has not granted anonymous share permission';
+  end if;
+
+  insert into featured_posts (post_id, display_mode, featured_by)
+    values (post_id, display_mode_arg, v_actor_id)
+    returning * into v_featured;
+
+  insert into admin_audit (target_post, action, actor)
+    values (post_id, 'post_featured', v_actor_id);
+  return v_featured;
+end $$;
+
+create or replace function unfeature_post(post_id uuid)
+returns void
+language plpgsql security definer as $$
+declare
+  v_actor_id uuid := auth.uid();
+  v_is_admin boolean;
+begin
+  select is_admin into v_is_admin from profiles where id = v_actor_id;
+  if not v_is_admin then raise exception 'not authorized'; end if;
+
+  update featured_posts set unfeatured_at = now()
+    where post_id = unfeature_post.post_id and unfeatured_at is null;
+
+  insert into admin_audit (target_post, action, actor)
+    values (post_id, 'post_unfeatured', v_actor_id);
+end $$;
+```
+
+### Public post fetch (M3, used by `/p/{id}`)
+
+```sql
+-- The /p/{id} page is publicly readable, so we need a function that bypasses
+-- user-scoped RLS on posts but only for currently-featured posts.
+
+create or replace function get_featured_post(post_id uuid)
+returns table (
+  post_id uuid,
+  prompt_text text,
+  post_text text,
+  photo_url text,
+  date date,
+  display_mode text,
+  display_name text -- null if display_mode = 'anonymous'
+)
+language plpgsql security definer as $$
+begin
+  return query
+  select
+    p.id,
+    pr.text,
+    p.text,
+    p.photo_url,
+    p.date,
+    fp.display_mode,
+    case when fp.display_mode = 'with_name' then prof.display_name else null end
+  from posts p
+  join prompts pr on p.prompt_id = pr.id
+  join featured_posts fp on fp.post_id = p.id
+  join profiles prof on p.user_id = prof.id
+  where p.id = get_featured_post.post_id
+    and fp.unfeatured_at is null
+    and p.moderation_status != 'hidden';
+end $$;
+
+-- Allow anonymous (unauthenticated) callers to use this function
+grant execute on function get_featured_post(uuid) to anon, authenticated;
+```
 
 ## Seeds
 

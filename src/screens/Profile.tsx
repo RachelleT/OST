@@ -125,7 +125,7 @@ export default function Profile() {
   }
 
   const memberSince = profile?.created_at
-    ? format(new Date(profile.created_at), 'MM/yyyy')
+    ? format(new Date(profile.created_at), 'yyyy')
     : '—'
 
   const ios = isIOS()
@@ -142,12 +142,12 @@ export default function Profile() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'Current streak', value: current, large: true },
-            { label: 'Longest streak', value: longest, large: true },
-            { label: 'Member since', value: memberSince, large: false },
-          ].map(({ label, value, large }) => (
+            { label: 'Current streak', value: current },
+            { label: 'Longest streak', value: longest },
+            { label: 'Member since', value: memberSince },
+          ].map(({ label, value }) => (
             <div key={label} className="rounded-2xl bg-white p-3 text-center shadow-sm">
-              <p className={`${large ? 'text-2xl' : 'text-base'} font-bold text-gray-900`}>{value}</p>
+              <p className="text-2xl font-bold text-gray-900">{value}</p>
               <p className="text-xs text-gray-500 mt-0.5 leading-tight">{label}</p>
             </div>
           ))}

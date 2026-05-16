@@ -37,20 +37,23 @@ See STACK.md for setup steps and version pinning.
 
 ## Milestones
 
-**M1 — Core loop** (build this first, ship to ~5 friends)
+**M1 — Core loop** ✅ COMPLETE
 Auth via magic link, today screen with prompt, post composer with 280-char text + photo upload, history view, streak calculation. Prompt pool hardcoded.
 
-**M2 — Reminders + grace day**
-Web push setup, user reminder time preference, skip-if-already-posted logic, grace day mechanic.
+**M2 — Reminders + grace day** ✅ COMPLETE
+Timezone-correct date handling, grace day mechanic, web push subscription + sending via pg_cron + Edge Function, gentle reminder copy with back-off, settings screen, streak milestones.
 
-**M3 — Admin**
-Admin role, prompt CRUD UI, all-posts dashboard, share permission filtering, share-card image generation.
+**M2.1 — Warm notes** ← SMALL FOLLOW-ON
+A soft note (encouragement, observation, light humor) shown on the Today screen — one before posting, one after. Pool hardcoded for now; admin CRUD lands in M3. See MILESTONE_2.1.md.
+
+**M3 — Admin** (in progress in parallel)
+Admin route gated by `is_admin`, prompt CRUD UI (unblocks adding more prompts and notes), all-posts dashboard with manual moderation/hide, featured posts + public `/p/{id}` route, share-card PNG generation, admin invite flow. See MILESTONE_3.md.
 
 **M4 — Moderation**
 Automated moderation on post submit, admin review queue, the share permission toggles in the composer.
 
 **M5 — Public share page**
-`/p/[id]` route for featured posts, social meta tags, anonymous vs named display logic.
+`/p/[id]` route polish with social meta tags, anonymous vs named display logic, og:image generation.
 
 ## What "done" means for each milestone
 

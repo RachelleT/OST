@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase'
 import type { Post } from '../hooks/usePost'
 import type { Palette } from '../lib/palette'
 import { MILESTONES } from './StreakPill'
+import WarmNote from './WarmNote'
+import type { Note } from '../lib/notes'
 
 const MILESTONE_ACK_PREFIX = 'milestone_acked_'
 
@@ -15,6 +17,7 @@ interface Props {
   graceUsed?: boolean
   currentStreak?: number
   reminderLabel?: string | null
+  warmNote?: Note | null
 }
 
 export default function PostCard({
@@ -25,6 +28,7 @@ export default function PostCard({
   graceUsed = false,
   currentStreak = 0,
   reminderLabel,
+  warmNote,
 }: Props) {
   const [photoSrc, setPhotoSrc] = useState<string | null>(null)
   const [milestoneVisible, setMilestoneVisible] = useState(false)
@@ -133,6 +137,9 @@ export default function PostCard({
           Edit response
         </button>
       )}
+
+      {/* Warm note — between post and see you tomorrow */}
+      {warmNote && <WarmNote note={warmNote} pool="completed_state" />}
 
       {/* See you tomorrow */}
       <div

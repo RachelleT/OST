@@ -10,9 +10,12 @@ This is a build spec for "One Small Thing," a daily-prompt journaling PWA. You a
 4. `DESIGN.md` — visual system (especially the weekly color rotation)
 5. `SCHEMA.md` — database schema and RLS policies
 6. `STACK.md` — tech choices, pinned versions, project structure
-7. `MILESTONE_1.md` — step-by-step what to build first
+7. `MILESTONE_1.md` — step-by-step for the first milestone (core loop) — COMPLETE
+8. `MILESTONE_2.md` — step-by-step for the second milestone (reminders + grace day) — COMPLETE
+9. `MILESTONE_2.1.md` — small follow-on to M2 (warm notes on Today screen)
+10. `MILESTONE_3.md` — step-by-step for the third milestone (admin)
 
-Then start at Step 1 of MILESTONE_1.md and work through them in order.
+M1 and M2 are complete. M2.1 is a small, focused follow-on (warm notes on the Today screen) that should ship before or alongside M3. Read the milestone file the user points you at; do not jump ahead. M2.1 and M3 can be developed in parallel — they touch different surfaces.
 
 ## Environment
 
