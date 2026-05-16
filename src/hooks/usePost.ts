@@ -32,6 +32,7 @@ export interface Post {
   date: string
   text: string | null
   photoUrl: string | null
+  moderationStatus: string
   createdAt: string
   updatedAt: string
 }
@@ -63,6 +64,7 @@ function rowToPost(data: Record<string, unknown>): Post {
     date: data.date as string,
     text: data.text as string | null,
     photoUrl: data.photo_url as string | null,
+    moderationStatus: (data.moderation_status as string | undefined) ?? 'pending',
     createdAt: data.created_at as string,
     updatedAt: data.updated_at as string,
   }

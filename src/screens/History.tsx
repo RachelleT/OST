@@ -10,6 +10,7 @@ interface PostRow {
   date: string
   text: string | null
   photo_url: string | null
+  moderation_status: string
   prompts: { text: string }[] | null
 }
 
@@ -47,7 +48,7 @@ export default function History() {
   useEffect(() => {
     supabase
       .from('posts')
-      .select('id, date, text, photo_url, prompts(text)')
+      .select('id, date, text, photo_url, moderation_status, prompts(text)')
       .order('date', { ascending: false })
       .then(({ data }) => {
         setPosts((data as unknown as PostRow[]) ?? [])
@@ -156,6 +157,7 @@ export default function History() {
                 <div className="space-y-2">
                   {weekPosts.map(post => {
                     const p = dayPalette(parseISO(post.date))
+                    const isHidden = post.moderation_status === 'hidden'
                     return (
                       <div key={post.id} className="rounded-2xl bg-white p-4 shadow-sm">
                         <div className="flex items-center gap-2 mb-2">
@@ -168,18 +170,26 @@ export default function History() {
                             {format(parseISO(post.date), 'EEEE, MMM d')}
                           </p>
                         </div>
-                        {post.prompts?.[0]?.text && (
-                          <p className="text-xs text-gray-400 italic mb-1 line-clamp-1">
-                            {post.prompts[0].text}
+                        {isHidden ? (
+                          <p className="text-sm text-gray-400 italic">
+                            This post has been hidden by a moderator. Contact support if you think this is a mistake.
                           </p>
-                        )}
-                        {post.text && (
-                          <p className="text-sm text-gray-800 leading-relaxed line-clamp-3">
-                            {post.text}
-                          </p>
-                        )}
-                        {post.photo_url && (
-                          <HistoryPhoto storagePath={post.photo_url} />
+                        ) : (
+                          <>
+                            {post.prompts?.[0]?.text && (
+                              <p className="text-xs text-gray-400 italic mb-1 line-clamp-1">
+                                {post.prompts[0].text}
+                              </p>
+                            )}
+                            {post.text && (
+                              <p className="text-sm text-gray-800 leading-relaxed line-clamp-3">
+                                {post.text}
+                              </p>
+                            )}
+                            {post.photo_url && (
+                              <HistoryPhoto storagePath={post.photo_url} />
+                            )}
+                          </>
                         )}
                       </div>
                     )

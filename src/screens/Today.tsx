@@ -156,19 +156,28 @@ export default function Today() {
                   )}
                 </>
               ) : activePost ? (
-                <div className="space-y-3">
-                  <PostCard
-                    post={activePost}
-                    palette={palette}
-                    isEditable={isEditable}
-                    onEdit={() => setEditing(true)}
-                    graceUsed={graceUsed}
-                    currentStreak={currentStreak}
-                    reminderLabel={reminderLabel(profileReminderTime)}
-                    warmNote={completedNote}
-                  />
-                  <NotificationPrompt palette={palette} isFirstPost={isFirstPost} />
-                </div>
+                activePost.moderationStatus === 'hidden' ? (
+                  <div
+                    className="rounded-3xl p-4 text-sm"
+                    style={{ background: 'rgba(255,255,255,0.55)', color: palette.textOnBg, opacity: 0.7 }}
+                  >
+                    This post has been hidden by a moderator. Contact support if you think this is a mistake.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <PostCard
+                      post={activePost}
+                      palette={palette}
+                      isEditable={isEditable}
+                      onEdit={() => setEditing(true)}
+                      graceUsed={graceUsed}
+                      currentStreak={currentStreak}
+                      reminderLabel={reminderLabel(profileReminderTime)}
+                      warmNote={completedNote}
+                    />
+                    <NotificationPrompt palette={palette} isFirstPost={isFirstPost} />
+                  </div>
+                )
               ) : null}
             </>
           )}
