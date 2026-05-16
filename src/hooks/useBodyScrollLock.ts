@@ -1,15 +1,4 @@
-import { useEffect } from 'react'
-
-export function useBodyScrollLock() {
-  useEffect(() => {
-    const root = document.getElementById('root')
-    if (!root) return
-    const savedScrollTop = root.scrollTop
-    const prev = root.style.overflowY
-    root.style.overflowY = 'hidden'
-    return () => {
-      root.style.overflowY = prev
-      root.scrollTop = savedScrollTop
-    }
-  }, [])
-}
+// No-op: #root is position:fixed so modal backdrops (also fixed, z-50)
+// already block all background interaction without any overflow toggling.
+// Toggling overflow-y was causing scrollTop to reset and the page to jump.
+export function useBodyScrollLock() {}
