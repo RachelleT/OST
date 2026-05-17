@@ -74,17 +74,16 @@ export default function History() {
   const { current, longest } = calculateStreaks(dates)
   const postedSet = new Set(dates)
 
-  // Build 6-week grid, newest row first.
-  // If today is Sunday (week just started), skip the current partial week so we
-  // don't show a lone single block — instead show 6 complete past weeks.
+  // 6-week rolling grid: oldest week at top, current week at bottom.
+  // All 42 cells are always filled — future days show as light gray, missed
+  // days (past, no post) get an ✕. As each new Sunday arrives the oldest row
+  // drops off the top and the new week appears at the bottom.
   const today = new Date()
+  const todayISO = toISODate(today)
   const currentWeekSunday = weekStart(today)
-  const startSunday = today.getDay() === 0
-    ? new Date(currentWeekSunday.getTime() - 7 * 24 * 60 * 60 * 1000)
-    : currentWeekSunday
   const weeks: Date[][] = Array.from({ length: 6 }, (_, i) => {
-    const s = new Date(startSunday)
-    s.setDate(startSunday.getDate() - i * 7)
+    const s = new Date(currentWeekSunday)
+    s.setDate(currentWeekSunday.getDate() - (5 - i) * 7) // i=0 oldest, i=5 this week
     return weekDays(s)
   })
 
@@ -132,21 +131,27 @@ export default function History() {
                   const iso = toISODate(day)
                   const posted = postedSet.has(iso)
                   const p = dayPalette(day)
-                  const isFuture = day > today
+                  const isFuture = iso > todayISO
+                  const isToday = iso === todayISO
+                  const isMissed = !isFuture && !isToday && !posted
                   return (
                     <div
                       key={iso}
                       title={format(day, 'MMM d')}
-                      className="aspect-square rounded-md"
+                      className="aspect-square rounded-md flex items-center justify-center"
                       style={{
                         background: isFuture
-                          ? 'transparent'
+                          ? '#e5e7eb'
                           : posted
                           ? p.accent
                           : '#d1d5db',
                       }}
-                      aria-label={`${format(day, 'MMM d')}${posted ? ', posted' : ''}`}
-                    />
+                      aria-label={`${format(day, 'MMM d')}${posted ? ', posted' : isMissed ? ', missed' : ''}`}
+                    >
+                      {isMissed && (
+                        <span className="text-[9px] font-bold leading-none" style={{ color: '#9ca3af' }}>✕</span>
+                      )}
+                    </div>
                   )
                 })}
               </div>
