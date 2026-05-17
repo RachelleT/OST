@@ -102,7 +102,7 @@ export default function History() {
   }, {})
 
   return (
-    <div className="min-h-full pb-20" style={{ background: NEUTRAL_BG }}>
+    <div className="min-h-full pb-32" style={{ background: NEUTRAL_BG }}>
       <div className="px-5 pt-12 space-y-6">
 
         {/* Header */}
