@@ -74,17 +74,18 @@ export default function History() {
   const { current, longest } = calculateStreaks(dates)
   const postedSet = new Set(dates)
 
-  // 6-week rolling grid: oldest week at top, current week at bottom.
-  // All 42 cells are always filled — future days show as light gray, missed
-  // days (past, no post, after join date) get an ✕. As each new Sunday arrives
-  // the oldest row drops off the top and the new week appears at the bottom.
+  // Grid starts at the user's join week and grows by one row each Sunday.
+  // All cells are filled — past missed days (after join) get ✕, future days are light gray.
   const today = new Date()
   const todayISO = toISODate(today)
   const joinedISO = user ? toISODate(new Date(user.created_at)) : todayISO
+  const joinWeekSunday = weekStart(new Date(joinedISO))
   const currentWeekSunday = weekStart(today)
-  const weeks: Date[][] = Array.from({ length: 6 }, (_, i) => {
-    const s = new Date(currentWeekSunday)
-    s.setDate(currentWeekSunday.getDate() - (5 - i) * 7) // i=0 oldest, i=5 this week
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000
+  const weekCount = Math.round((currentWeekSunday.getTime() - joinWeekSunday.getTime()) / msPerWeek) + 1
+  const weeks: Date[][] = Array.from({ length: weekCount }, (_, i) => {
+    const s = new Date(joinWeekSunday)
+    s.setDate(joinWeekSunday.getDate() + i * 7)
     return weekDays(s)
   })
 
