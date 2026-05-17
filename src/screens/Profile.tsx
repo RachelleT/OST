@@ -332,7 +332,7 @@ export default function Profile() {
           ) : (
             <div className="rounded-xl border border-red-100 bg-red-50 p-3 space-y-2">
               <p className="text-xs text-red-700 font-medium text-center">
-                Deactivate your account? You can reactivate anytime by signing back in.
+                Deactivate your account? This cannot be undone — you would need to sign up again.
               </p>
               <div className="flex gap-2">
                 <button
