@@ -18,12 +18,12 @@ import WarmNote from '../components/WarmNote'
 import NotificationPrompt from '../components/NotificationPrompt'
 import { reminderLabel } from '../lib/reminderTime'
 
-const today = new Date()
-const palette = dayPalette(today)
-
 export default function Today() {
   const { user } = useAuth()
   const profile = useProfile()
+  // Recompute today on every render tick triggered by visibility changes
+  const [today, setToday] = useState(() => new Date())
+  const palette = dayPalette(today)
   const { data: prompt, isLoading: promptLoading, error: promptError } = useTodayPrompt()
   const { post: existingPost, isLoading: postLoading, isEditable, setPost } = useTodayPost()
   const [editing, setEditing] = useState(false)
@@ -64,6 +64,18 @@ export default function Today() {
       .from('posts')
       .select('id', { count: 'exact', head: true })
       .then(({ count }) => { if ((count ?? 0) === 0) setIsFirstPost(true) })
+  }, [])
+
+  // Refresh when the app comes back into the foreground (e.g. after overnight)
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === 'visible') {
+        setToday(new Date())
+        setStreakKey(k => k + 1)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [])
 
   useEffect(() => {
