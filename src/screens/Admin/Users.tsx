@@ -10,11 +10,10 @@ interface AdminUser {
   current_streak: number
   longest_streak: number
   post_count: number
-  is_admin: boolean
   deactivated_at: string | null
 }
 
-type FilterTab = 'all' | 'week' | 'month' | 'admin' | 'deactivated'
+type FilterTab = 'all' | 'week' | 'month' | 'deactivated'
 
 const ACCENT = '#04342C'
 const PAGE_SIZE = 50
@@ -23,7 +22,6 @@ const TABS: { key: FilterTab; label: string }[] = [
   { key: 'all',         label: 'All' },
   { key: 'week',        label: 'This week' },
   { key: 'month',       label: 'This month' },
-  { key: 'admin',       label: 'Admins' },
   { key: 'deactivated', label: 'Deactivated' },
 ]
 
@@ -35,7 +33,6 @@ export default function AdminUsers() {
   const [page, setPage]     = useState(0)
   const [hasMore, setHasMore] = useState(false)
   const [total, setTotal]   = useState<number | null>(null)
-
   const [loadError, setLoadError] = useState('')
 
   const loadUsers = useCallback(async (currentTab: FilterTab, searchText: string, pageNum: number) => {
@@ -54,8 +51,6 @@ export default function AdminUsers() {
 
     if (pageNum === 0) {
       setUsers(page_rows)
-      // rough total from first page
-      if (!hasNext) setTotal(page_rows.length + pageNum * PAGE_SIZE)
     } else {
       setUsers(prev => [...prev, ...page_rows])
     }
@@ -147,14 +142,6 @@ export default function AdminUsers() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-semibold text-gray-900">{u.display_name}</span>
-                      {u.is_admin && (
-                        <span
-                          className="text-xs font-medium px-2 py-0.5 rounded-full"
-                          style={{ background: '#E1F5EE', color: ACCENT }}
-                        >
-                          Admin
-                        </span>
-                      )}
                       {u.deactivated_at && (
                         <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
                           Deactivated
