@@ -36,14 +36,18 @@ export default function AdminUsers() {
   const [hasMore, setHasMore] = useState(false)
   const [total, setTotal]   = useState<number | null>(null)
 
+  const [loadError, setLoadError] = useState('')
+
   const loadUsers = useCallback(async (currentTab: FilterTab, searchText: string, pageNum: number) => {
     setLoading(true)
-    const { data } = await supabase.rpc('admin_get_users', {
+    if (pageNum === 0) setLoadError('')
+    const { data, error } = await supabase.rpc('admin_get_users', {
       p_search: searchText.trim() || null,
       p_filter: currentTab,
       p_limit:  PAGE_SIZE + 1,
       p_offset: pageNum * PAGE_SIZE,
     })
+    if (error) { setLoadError(error.message); setLoading(false); return }
     const rows = (data as AdminUser[]) ?? []
     const hasNext = rows.length > PAGE_SIZE
     const page_rows = hasNext ? rows.slice(0, PAGE_SIZE) : rows
@@ -118,6 +122,14 @@ export default function AdminUsers() {
           style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
         />
       </div>
+
+      {/* Error */}
+      {loadError && (
+        <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3">
+          <p className="text-sm font-medium text-red-700">Failed to load users</p>
+          <p className="text-xs text-red-500 mt-0.5 font-mono">{loadError}</p>
+        </div>
+      )}
 
       {/* List */}
       {loading && users.length === 0 ? (
