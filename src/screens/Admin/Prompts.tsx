@@ -146,10 +146,10 @@ export default function AdminPrompts() {
   async function handleSave(text: string): Promise<string | null> {
     if (modal.id) {
       const { error } = await supabase.rpc('admin_update_prompt', { p_id: modal.id, p_text: text })
-      if (error) return error.message
+      if (error) return error.message.includes('unique') ? 'A prompt with this text already exists' : error.message
     } else {
       const { error } = await supabase.rpc('admin_create_prompt', { p_text: text })
-      if (error) return error.message
+      if (error) return error.message.includes('unique') ? 'A prompt with this text already exists' : error.message
     }
     setModal({ open: false, id: null, text: '' })
     load()
