@@ -76,10 +76,11 @@ export default function History() {
 
   // 6-week rolling grid: oldest week at top, current week at bottom.
   // All 42 cells are always filled — future days show as light gray, missed
-  // days (past, no post) get an ✕. As each new Sunday arrives the oldest row
-  // drops off the top and the new week appears at the bottom.
+  // days (past, no post, after join date) get an ✕. As each new Sunday arrives
+  // the oldest row drops off the top and the new week appears at the bottom.
   const today = new Date()
   const todayISO = toISODate(today)
+  const joinedISO = user ? toISODate(new Date(user.created_at)) : todayISO
   const currentWeekSunday = weekStart(today)
   const weeks: Date[][] = Array.from({ length: 6 }, (_, i) => {
     const s = new Date(currentWeekSunday)
@@ -133,7 +134,7 @@ export default function History() {
                   const p = dayPalette(day)
                   const isFuture = iso > todayISO
                   const isToday = iso === todayISO
-                  const isMissed = !isFuture && !isToday && !posted
+                  const isMissed = !isFuture && !isToday && !posted && iso >= joinedISO
                   return (
                     <div
                       key={iso}
