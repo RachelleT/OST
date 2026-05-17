@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import { REMINDER_OPTIONS } from '../lib/reminderTime'
@@ -13,21 +13,51 @@ const slide = {
   exit:    { opacity: 0, y: -16, transition: { duration: 0.15 } },
 }
 
+const TOTAL_STEPS = 5
+
 export default function Onboarding({ onComplete }: Props) {
   const [step, setStep] = useState(0)
+  const [displayName, setDisplayName] = useState('')
+  const [nameError, setNameError] = useState('')
   const [reminderValue, setReminderValue] = useState<string | null>('20:00')
+  const [saving, setSaving] = useState(false)
+  const nameInputRef = useRef<HTMLInputElement>(null)
 
   async function next() {
-    if (step < 3) { setStep(s => s + 1); return }
+    // Validate name step
+    if (step === 1) {
+      const trimmed = displayName.trim()
+      if (trimmed.length < 3) {
+        setNameError('Name must be at least 3 characters')
+        nameInputRef.current?.focus()
+        return
+      }
+      if (trimmed.length > 30) {
+        setNameError('Name must be 30 characters or fewer')
+        nameInputRef.current?.focus()
+        return
+      }
+      setNameError('')
+    }
 
-    // Save reminder time to DB
+    if (step < TOTAL_STEPS - 1) {
+      setStep(s => s + 1)
+      return
+    }
+
+    // Final step — save name + reminder
+    setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       await supabase
         .from('profiles')
-        .update({ reminder_time: reminderValue })
+        .update({
+          display_name: displayName.trim(),
+          reminder_time: reminderValue,
+        })
         .eq('id', user.id)
     }
+    setSaving(false)
     onComplete()
   }
 
@@ -35,7 +65,7 @@ export default function Onboarding({ onComplete }: Props) {
     <div className="min-h-full flex flex-col px-6 py-12" style={{ background: '#FAF5EC' }}>
       {/* Progress dots */}
       <div className="flex justify-center gap-2 mb-10">
-        {[0, 1, 2, 3].map(i => (
+        {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
           <div
             key={i}
             className="w-2 h-2 rounded-full transition-colors"
@@ -46,6 +76,7 @@ export default function Onboarding({ onComplete }: Props) {
       </div>
 
       <AnimatePresence mode="wait">
+        {/* Step 0 — Welcome */}
         {step === 0 && (
           <motion.div key="step0" {...slide} className="flex-1 flex flex-col justify-center text-center">
             <div
@@ -63,8 +94,44 @@ export default function Onboarding({ onComplete }: Props) {
           </motion.div>
         )}
 
+        {/* Step 1 — Name */}
         {step === 1 && (
-          <motion.div key="step1" {...slide} className="flex-1 flex flex-col justify-center">
+          <motion.div key="step1" {...slide} className="flex-1 flex flex-col justify-center space-y-6">
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
+                What should we call you?
+              </h2>
+              <p className="text-sm text-gray-500">
+                This is how you'll appear to yourself on your profile.
+              </p>
+            </div>
+            <div>
+              <label htmlFor="display-name" className="sr-only">Your name</label>
+              <input
+                id="display-name"
+                ref={nameInputRef}
+                type="text"
+                value={displayName}
+                onChange={e => { setDisplayName(e.target.value); setNameError('') }}
+                placeholder="Your name"
+                maxLength={30}
+                autoComplete="name"
+                className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2"
+                style={{ '--tw-ring-color': '#2DBFA8' } as React.CSSProperties}
+              />
+              {nameError && (
+                <p className="text-xs text-red-500 mt-2">{nameError}</p>
+              )}
+              <p className="text-xs text-gray-400 mt-2 text-right">
+                {displayName.trim().length}/30
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Step 2 — How it works */}
+        {step === 2 && (
+          <motion.div key="step2" {...slide} className="flex-1 flex flex-col justify-center">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6 tracking-tight">How it works</h2>
             <ul className="space-y-5">
               {[
@@ -82,8 +149,9 @@ export default function Onboarding({ onComplete }: Props) {
           </motion.div>
         )}
 
-        {step === 2 && (
-          <motion.div key="step2" {...slide} className="flex-1 flex flex-col justify-center space-y-6">
+        {/* Step 3 — Reminder */}
+        {step === 3 && (
+          <motion.div key="step3" {...slide} className="flex-1 flex flex-col justify-center space-y-6">
             <div>
               <h2 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
                 Set a reminder
@@ -122,8 +190,9 @@ export default function Onboarding({ onComplete }: Props) {
           </motion.div>
         )}
 
-        {step === 3 && (
-          <motion.div key="step3" {...slide} className="flex-1 flex flex-col justify-center space-y-6">
+        {/* Step 4 — Add to home screen */}
+        {step === 4 && (
+          <motion.div key="step4" {...slide} className="flex-1 flex flex-col justify-center space-y-6">
             <div>
               <h2 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
                 Add to your home screen
@@ -160,10 +229,11 @@ export default function Onboarding({ onComplete }: Props) {
 
       <button
         onClick={next}
-        className="mt-8 w-full rounded-full py-4 text-sm font-medium text-white transition-transform active:scale-95"
+        disabled={saving}
+        className="mt-8 w-full rounded-full py-4 text-sm font-medium text-white transition-transform active:scale-95 disabled:opacity-50"
         style={{ background: '#04342C' }}
       >
-        {step < 3 ? 'Next' : 'Get started'}
+        {saving ? 'Saving…' : step < TOTAL_STEPS - 1 ? 'Next' : 'Get started'}
       </button>
     </div>
   )
