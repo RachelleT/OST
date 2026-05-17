@@ -74,18 +74,22 @@ export default function History() {
   const { current, longest } = calculateStreaks(dates)
   const postedSet = new Set(dates)
 
-  // Grid starts at the user's join week and grows by one row each Sunday.
-  // All cells are filled — past missed days (after join) get ✕, future days are light gray.
+  // Grid grows from join week up to a max of 5 rows. After 5 weeks the oldest
+  // row is dropped and a new one added at the bottom each Sunday.
   const today = new Date()
   const todayISO = toISODate(today)
   const joinedISO = user ? toISODate(new Date(user.created_at)) : todayISO
   const joinWeekSunday = weekStart(new Date(joinedISO))
   const currentWeekSunday = weekStart(today)
   const msPerWeek = 7 * 24 * 60 * 60 * 1000
-  const weekCount = Math.round((currentWeekSunday.getTime() - joinWeekSunday.getTime()) / msPerWeek) + 1
-  const weeks: Date[][] = Array.from({ length: weekCount }, (_, i) => {
-    const s = new Date(joinWeekSunday)
-    s.setDate(joinWeekSunday.getDate() + i * 7)
+  const totalWeeks = Math.round((currentWeekSunday.getTime() - joinWeekSunday.getTime()) / msPerWeek) + 1
+  const displayWeeks = Math.min(totalWeeks, 5)
+  const startSunday = totalWeeks <= 5
+    ? joinWeekSunday
+    : new Date(currentWeekSunday.getTime() - (displayWeeks - 1) * msPerWeek)
+  const weeks: Date[][] = Array.from({ length: displayWeeks }, (_, i) => {
+    const s = new Date(startSunday)
+    s.setDate(startSunday.getDate() + i * 7)
     return weekDays(s)
   })
 
@@ -146,7 +150,10 @@ export default function History() {
                           ? '#e5e7eb'
                           : posted
                           ? p.accent
+                          : isToday
+                          ? p.light
                           : '#d1d5db',
+                        boxShadow: isToday ? `inset 0 0 0 2px ${p.accent}` : undefined,
                       }}
                       aria-label={`${format(day, 'MMM d')}${posted ? ', posted' : isMissed ? ', missed' : ''}`}
                     >
