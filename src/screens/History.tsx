@@ -74,13 +74,18 @@ export default function History() {
   const { current, longest } = calculateStreaks(dates)
   const postedSet = new Set(dates)
 
-  // Build 6-week grid ending today
+  // Build 6-week grid, newest row first.
+  // If today is Sunday (week just started), skip the current partial week so we
+  // don't show a lone single block — instead show 6 complete past weeks.
   const today = new Date()
-  const sunday = weekStart(today)
+  const currentWeekSunday = weekStart(today)
+  const startSunday = today.getDay() === 0
+    ? new Date(currentWeekSunday.getTime() - 7 * 24 * 60 * 60 * 1000)
+    : currentWeekSunday
   const weeks: Date[][] = Array.from({ length: 6 }, (_, i) => {
-    const weekSunday = new Date(sunday)
-    weekSunday.setDate(sunday.getDate() - (5 - i) * 7)
-    return weekDays(weekSunday)
+    const s = new Date(startSunday)
+    s.setDate(startSunday.getDate() - i * 7)
+    return weekDays(s)
   })
 
   // Group posts by week label for the list below
@@ -135,11 +140,10 @@ export default function History() {
                       className="aspect-square rounded-md"
                       style={{
                         background: isFuture
-                          ? '#e5e7eb'
+                          ? 'transparent'
                           : posted
                           ? p.accent
                           : '#d1d5db',
-                        opacity: isFuture ? 0.3 : 1,
                       }}
                       aria-label={`${format(day, 'MMM d')}${posted ? ', posted' : ''}`}
                     />
