@@ -150,8 +150,6 @@ export default function History() {
                           ? '#e5e7eb'
                           : posted
                           ? p.accent
-                          : isToday
-                          ? p.light
                           : '#d1d5db',
                         boxShadow: isToday ? `inset 0 0 0 2px ${p.accent}` : undefined,
                       }}
