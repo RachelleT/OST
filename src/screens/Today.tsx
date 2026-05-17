@@ -32,7 +32,6 @@ export default function Today() {
 
   // Derive the active post: prefer the freshly submitted one
   const [submittedPost, setSubmittedPost] = useState<Post | null>(null)
-  const [graceUsed, setGraceUsed] = useState(false)
   const [isFirstPost, setIsFirstPost] = useState(false)
   const [emptyNote, setEmptyNote] = useState<Note | null>(null)
   const [completedNote, setCompletedNote] = useState<Note | null>(null)
@@ -83,9 +82,8 @@ export default function Today() {
     }
   }, [])
 
-  function handleSubmitted(post: Post, grace: boolean) {
+  function handleSubmitted(post: Post, _grace: boolean) {
     setSubmittedPost(post)
-    setGraceUsed(grace)
     setPost(post)
     setEditing(false)
     setStreakKey(k => k + 1)
@@ -170,7 +168,6 @@ export default function Today() {
                       palette={palette}
                       isEditable={isEditable}
                       onEdit={() => setEditing(true)}
-                      graceUsed={graceUsed}
                       currentStreak={currentStreak}
                       reminderLabel={reminderLabel(profileReminderTime)}
                       warmNote={completedNote}

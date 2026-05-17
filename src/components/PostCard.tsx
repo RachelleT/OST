@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { format } from 'date-fns'
 import { supabase } from '../lib/supabase'
 import type { Post } from '../hooks/usePost'
 import type { Palette } from '../lib/palette'
@@ -14,7 +13,6 @@ interface Props {
   palette: Palette
   isEditable: boolean
   onEdit: () => void
-  graceUsed?: boolean
   currentStreak?: number
   reminderLabel?: string | null
   warmNote?: Note | null
@@ -25,7 +23,6 @@ export default function PostCard({
   palette,
   isEditable,
   onEdit,
-  graceUsed = false,
   currentStreak = 0,
   reminderLabel,
   warmNote,
@@ -58,10 +55,6 @@ export default function PostCard({
     localStorage.setItem(`${MILESTONE_ACK_PREFIX}${currentStreak}`, '1')
     setMilestoneVisible(false)
   }
-
-  const graceDayName = graceUsed
-    ? format(new Date(post.date + 'T12:00:00'), 'EEEE')
-    : null
 
   return (
     <div className="space-y-3">
