@@ -34,6 +34,7 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: none;
+  background: #FAF5EC; /* neutral fallback so scroll overscroll never shows white */
 }
 
 /* Safe area utilities for notch / home indicator */

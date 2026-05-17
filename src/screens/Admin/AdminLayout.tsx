@@ -105,7 +105,7 @@ export default function AdminLayout() {
         </nav>
 
         {/* Main content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16 md:pb-0">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16 md:pb-0" style={{ background: ADMIN_BG }}>
           <Outlet />
         </main>
       </div>
