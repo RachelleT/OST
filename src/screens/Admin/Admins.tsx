@@ -70,10 +70,11 @@ function InviteModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
 
     const outcome = data as string
 
-    // If this is a new-user invite, send the actual invite email via Edge Function
+    // If this is a new-user invite, send the invite email via Edge Function.
+    // Email failure is non-blocking — the DB invite record already exists.
     if (outcome === 'invited') {
       const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch(
+      await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-admin-invite`,
         {
           method: 'POST',
@@ -83,13 +84,7 @@ function InviteModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
           },
           body: JSON.stringify({ email: email.trim() }),
         }
-      )
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        setSaving(false)
-        setError(body.error ?? 'Failed to send invite email')
-        return
-      }
+      ).catch(() => {}) // email best-effort — invite record is already saved
     }
 
     setSaving(false)
@@ -105,8 +100,8 @@ function InviteModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
           </p>
           <p className="text-sm text-gray-500">
             {result === 'promoted'
-              ? `${email} already had an account and is now an admin.`
-              : `${email} will become an admin when they sign in for the first time.`}
+              ? `${email} already had an account and has been promoted. They appear in the admins list now.`
+              : `${email} has been invited. They'll appear under Pending invites below until they sign in for the first time.`}
           </p>
           <button
             onClick={() => { onDone(); onClose() }}
@@ -329,12 +324,14 @@ export default function AdminAdmins() {
             })}
           </div>
 
-          {/* Pending invites */}
-          {pending.length > 0 && (
-            <div className="mt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Pending invites
-              </p>
+          {/* Pending invites — always shown so admins know where to look */}
+          <div className="mt-6">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+              Pending invites
+            </p>
+            {pending.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-4">No pending invites.</p>
+            ) : (
               <div className="space-y-2">
                 {pending.map(inv => (
                   <div key={inv.id} className="rounded-2xl bg-white p-4 shadow-sm flex items-center gap-3">
@@ -354,8 +351,8 @@ export default function AdminAdmins() {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </>
       ) : (
         /* Audit log */
