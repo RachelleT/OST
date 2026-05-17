@@ -19,13 +19,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const [profile, setProfile] = useState<Profile | null>(null)
 
-  useEffect(() => {
-    if (!user) { setProfile(null); return }
-
+  function fetchProfile(uid: string) {
     supabase
       .from('profiles')
       .select('id, display_name, timezone, reminder_time, is_admin, current_streak, longest_streak, deactivated_at')
-      .eq('id', user.id)
+      .eq('id', uid)
       .single()
       .then(({ data }) => {
         if (!data) return
@@ -39,7 +37,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           supabase
             .from('profiles')
             .update({ timezone: detectedTz })
-            .eq('id', user.id)
+            .eq('id', uid)
             .then(() => {})
         }
 
@@ -54,6 +52,16 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           longestStreak: row.longest_streak as number,
         })
       })
+  }
+
+  useEffect(() => {
+    if (!user) { setProfile(null); return }
+    fetchProfile(user.id)
+
+    // Re-fetch when Profile screen saves a change (name, timezone, etc.)
+    function onUpdated() { fetchProfile(user.id) }
+    window.addEventListener('profile-updated', onUpdated)
+    return () => window.removeEventListener('profile-updated', onUpdated)
   }, [user])
 
   return <ProfileContext.Provider value={profile}>{children}</ProfileContext.Provider>

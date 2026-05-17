@@ -98,6 +98,7 @@ export default function Profile() {
     setTzSaving(true)
     await supabase.from('profiles').update({ timezone: timezone.trim() }).eq('id', user.id)
     setTzSaving(false)
+    window.dispatchEvent(new CustomEvent('profile-updated'))
     setTzSaved(true)
     setTimeout(() => setTzSaved(false), 2500)
   }
@@ -137,6 +138,7 @@ export default function Profile() {
       setNameError('Failed to save — please try again')
     } else {
       setProfile(p => p ? { ...p, display_name: trimmed } : p)
+      window.dispatchEvent(new CustomEvent('profile-updated'))
       setSavedToast(true)
       setTimeout(() => setSavedToast(false), 2500)
     }
