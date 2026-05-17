@@ -171,6 +171,16 @@ export default function Profile() {
           ))}
         </div>
 
+        {/* Nudge for default "Friend" name */}
+        {profile?.display_name === 'Friend' && (
+          <div className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3">
+            <p className="text-sm font-medium text-amber-800">Set your display name</p>
+            <p className="text-xs text-amber-700 mt-0.5">
+              You're currently showing as "Friend". Update it below to something that feels like you.
+            </p>
+          </div>
+        )}
+
         {/* Display name */}
         <div className="rounded-2xl bg-white p-4 shadow-sm space-y-3">
           <h2 className="text-sm font-semibold text-gray-700">Display name</h2>

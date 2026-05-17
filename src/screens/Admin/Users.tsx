@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { format, parseISO } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 
@@ -26,6 +27,7 @@ const TABS: { key: FilterTab; label: string }[] = [
 ]
 
 export default function AdminUsers() {
+  const navigate = useNavigate()
   const [users, setUsers]   = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab]       = useState<FilterTab>('all')
@@ -79,6 +81,12 @@ export default function AdminUsers() {
     <div className="px-5 py-8 pb-24 w-full max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <div>
+          <button
+            onClick={() => navigate('/admin/posts')}
+            className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-700 mb-2 transition-colors"
+          >
+            ← Posts
+          </button>
           <h1 className="text-xl font-semibold text-gray-900">Users</h1>
           {total !== null && (
             <p className="text-sm text-gray-400 mt-0.5">{total} total</p>
