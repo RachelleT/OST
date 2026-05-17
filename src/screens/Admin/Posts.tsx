@@ -53,13 +53,12 @@ const WEEK_PALETTES = Array.from({ length: 7 }, (_, dow) => {
   return dayPalette(d)
 })
 
-function todayUTC() {
-  return new Date().toISOString().slice(0, 10)
+function todayLocal() {
+  return format(new Date(), 'yyyy-MM-dd')
 }
 
-function weekStartUTC() {
-  const d = startOfWeek(new Date(), { weekStartsOn: 0 })
-  return d.toISOString().slice(0, 10)
+function weekStartLocal() {
+  return format(startOfWeek(new Date(), { weekStartsOn: 0 }), 'yyyy-MM-dd')
 }
 
 // ── Metrics widget ─────────────────────────────────────────────────────────
@@ -444,8 +443,8 @@ export default function AdminPosts() {
   const [selected, setSelected] = useState<AdminPost | null>(null)
 
   const loadMetrics = useCallback(async () => {
-    const today = todayUTC()
-    const weekStart = weekStartUTC()
+    const today = todayLocal()
+    const weekStart = weekStartLocal()
 
     const [{ count: users }, { count: postsToday }, { count: postsWeek }, { count: hidden }] =
       await Promise.all([
@@ -472,8 +471,8 @@ export default function AdminPosts() {
       .order('created_at', { ascending: false })
       .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1)
 
-    if (currentTab === 'today')      q = q.eq('date', todayUTC())
-    if (currentTab === 'week')       q = q.gte('date', weekStartUTC())
+    if (currentTab === 'today')      q = q.eq('date', todayLocal())
+    if (currentTab === 'week')       q = q.gte('date', weekStartLocal())
     if (currentTab === 'hidden')     q = q.eq('moderation_status', 'hidden')
     if (currentTab === 'featurable') q = q.eq('moderation_status', 'approved')
     if (searchText.trim())       q = q.ilike('text', `%${searchText.trim()}%`)
