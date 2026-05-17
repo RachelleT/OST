@@ -173,11 +173,18 @@ export default function AdminAdmins() {
   const [confirmDemote, setConfirmDemote] = useState<string | null>(null)
   const [demoting, setDemoting] = useState(false)
   const [demoteError, setDemoteError] = useState('')
+  const [confirmCancelInvite, setConfirmCancelInvite] = useState<string | null>(null)
   const [cancellingInvite, setCancellingInvite] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
-    const [{ data: adminData }, { data: pendingData }, { data: auditData }] = await Promise.all([
+    setLoadError('')
+    const [
+      { data: adminData,   error: adminErr },
+      { data: pendingData, error: pendingErr },
+      { data: auditData,   error: auditErr },
+    ] = await Promise.all([
       supabase.rpc('get_admin_list'),
       supabase
         .from('admin_invites')
@@ -186,6 +193,8 @@ export default function AdminAdmins() {
         .order('invited_at', { ascending: false }),
       supabase.rpc('get_audit_log', { p_limit: 50 }),
     ])
+    const firstError = adminErr ?? pendingErr ?? auditErr
+    if (firstError) setLoadError(firstError.message)
     setAdmins((adminData as AdminUser[]) ?? [])
     setPending((pendingData as PendingInvite[]) ?? [])
     setAudit((auditData as AuditEntry[]) ?? [])
@@ -241,6 +250,13 @@ export default function AdminAdmins() {
           </button>
         ))}
       </div>
+
+      {loadError && (
+        <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3">
+          <p className="text-sm font-medium text-red-700">Failed to load</p>
+          <p className="text-xs text-red-500 mt-0.5 font-mono">{loadError}</p>
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-3">
@@ -334,20 +350,47 @@ export default function AdminAdmins() {
             ) : (
               <div className="space-y-2">
                 {pending.map(inv => (
-                  <div key={inv.id} className="rounded-2xl bg-white p-4 shadow-sm flex items-center gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-700">{inv.email}</p>
-                      <p className="text-xs text-gray-400">
-                        Invited {format(parseISO(inv.invited_at), 'MMM d, yyyy')} · awaiting sign-in
-                      </p>
+                  <div key={inv.id} className="rounded-2xl bg-white p-4 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-700">{inv.email}</p>
+                        <p className="text-xs text-gray-400">
+                          Invited {format(parseISO(inv.invited_at), 'MMM d, yyyy')} · awaiting sign-in
+                        </p>
+                      </div>
+                      {confirmCancelInvite !== inv.id && (
+                        <button
+                          onClick={() => setConfirmCancelInvite(inv.id)}
+                          className="shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50"
+                        >
+                          Cancel invite
+                        </button>
+                      )}
                     </div>
-                    <button
-                      onClick={() => cancelInvite(inv.id, inv.email)}
-                      disabled={cancellingInvite === inv.id}
-                      className="shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40"
-                    >
-                      {cancellingInvite === inv.id ? '…' : 'Cancel'}
-                    </button>
+
+                    {confirmCancelInvite === inv.id && (
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <p className="text-sm text-gray-700 mb-2">
+                          Cancel the invite for <strong>{inv.email}</strong>?
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setConfirmCancelInvite(null)}
+                            className="flex-1 rounded-lg py-1.5 text-xs font-medium border border-gray-200 text-gray-600"
+                          >
+                            Keep invite
+                          </button>
+                          <button
+                            onClick={() => { setConfirmCancelInvite(null); cancelInvite(inv.id, inv.email) }}
+                            disabled={cancellingInvite === inv.id}
+                            className="flex-1 rounded-lg py-1.5 text-xs font-medium border disabled:opacity-40"
+                            style={{ borderColor: '#fca5a5', color: '#dc2626', background: '#fff5f5' }}
+                          >
+                            {cancellingInvite === inv.id ? '…' : 'Yes, cancel'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
