@@ -1,5 +1,8 @@
 -- Remove is_admin from admin_get_users return type (admins are managed on
 -- the dedicated Admins page) and drop the unused 'admin' filter option.
+-- Must drop first because PostgreSQL cannot change a function's return type in place.
+
+drop function if exists admin_get_users(text, text, int, int);
 
 create or replace function admin_get_users(
   p_search   text default null,
