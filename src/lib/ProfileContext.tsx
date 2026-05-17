@@ -8,6 +8,7 @@ interface Profile {
   timezone: string
   reminderTime: string | null
   isAdmin: boolean
+  isDeactivated: boolean
   currentStreak: number
   longestStreak: number
 }
@@ -23,7 +24,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
     supabase
       .from('profiles')
-      .select('id, display_name, timezone, reminder_time, is_admin, current_streak, longest_streak')
+      .select('id, display_name, timezone, reminder_time, is_admin, current_streak, longest_streak, deactivated_at')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
@@ -48,6 +49,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           timezone: storedTz === 'UTC' ? detectedTz : storedTz,
           reminderTime: row.reminder_time as string | null,
           isAdmin: row.is_admin as boolean,
+          isDeactivated: row.deactivated_at !== null,
           currentStreak: row.current_streak as number,
           longestStreak: row.longest_streak as number,
         })

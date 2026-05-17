@@ -119,23 +119,37 @@ For M2.1, seed with these — they live in `src/data/notes.ts`:
 
 ## Privacy & sharing
 
-All posts are shareable by admin — there is no opt-in gate before a post can be featured. The only choice at share time is **how** it is displayed:
+Posts are private by default. Two independent toggles per post, both default OFF:
 
-- **Anonymous**: post is featured without the author's name
-- **With name**: post is featured with the user's display name attached
+- **Allow anonymous use**: admin may feature this post on external surfaces (website, social media share images) without the user's name
+- **Allow with my name**: admin may feature this post with the user's display name attached
 
-Admin picks the display mode when featuring. Users have no pre-share toggle to flip; the admin exercises editorial judgment on what to feature. A user who wants a featured post removed should contact support.
+A post with anonymous=true and named=false can be featured but only without identifying the author.
+A post with both true gives admin the choice at share time.
+A post with both false is fully private — admin can see it (for moderation) but cannot publish it anywhere.
+
+Users can toggle these on past posts from the history view at any time. Revoking permission on a previously-featured post triggers an admin notification and the post is auto-unfeatured.
 
 ## Moderation
 
-Two-layer system. Build the manual layer in M3, automated in M4.
+Two-layer system built in M4. The manual layer (admin queue) and the automated layer (text + image classification) work together: automated flags create queue items, admins resolve them.
+
+**Core principle**: gentle by default. Users never see "your post was flagged." The author always sees their post normally; what moderation affects is *whether the post can be featured externally*, never whether it exists.
 
 **Automated (runs on every post submit, M4):**
-- Text → OpenAI Moderation endpoint. Flags: hate, harassment, sexual, self-harm, violence
-- Image → Google Cloud Vision SafeSearch. Flags: adult, racy, violence
-- If flagged at "high" confidence: post is held, user sees "Reviewing your post — this usually takes a few minutes" message
-- If flagged at "medium": post goes through but enters review queue
-- If clean: published immediately
+- Text → OpenAI Moderation endpoint. Categories that flag for review:
+  - `hate`, `harassment` → flag if confidence > 0.5
+  - `sexual`, `sexual/minors` → flag if confidence > 0.3
+  - `violence/graphic` → flag if confidence > 0.6
+- Self-harm signals (`self-harm/intent`, `self-harm/instructions`) get **special handling**: not held, not flagged for moderation, but surface in a separate admin "wellbeing aware" view. Author is never told. Admins can use judgment about reaching out via out-of-band channels. This is awareness, not censorship.
+- Image → Google Cloud Vision SafeSearch. Flag if `adult`, `racy`, or `violence` hit `LIKELY` or `VERY_LIKELY`.
+- A flagged post:
+  - Stays visible to the author (no friction)
+  - Is set to `moderation_status = 'held'`
+  - Is NOT featurable until admin reviews
+  - Appears in the admin moderation queue
+- A clean post is set to `moderation_status = 'approved'` and becomes eligible for featuring (subject to share permission toggles)
+- If the moderation API fails (down, timeout, error): post stays in `'pending'` status. A retry cron handles it. Pending posts are not featurable. After 3 failed retries, surface to admin as "needs attention."
 
 **Manual (M3+):**
 - Admin posts dashboard shows every post across all users with search/filter
@@ -146,6 +160,12 @@ Two-layer system. Build the manual layer in M3, automated in M4.
   - The photo (if any) becomes inaccessible via signed URL
   - Can be unhidden by an admin at any time
 - All hide/unhide actions logged to `admin_audit`
+
+**Manual queue (M4+):**
+- `/admin/moderation` shows queue of held posts with category info
+- Per-post: **Approve** (post becomes featurable), **Hide** (removes from author too), or **Ignore** (false positive — becomes featurable, decision logged for analytics)
+- Filter tabs: Needs review (default), Errored, Wellbeing aware, All history
+- The wellbeing tab is read-only by design — no action buttons
 
 ## Admin
 

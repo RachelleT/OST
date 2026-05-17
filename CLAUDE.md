@@ -14,8 +14,9 @@ This is a build spec for "One Small Thing," a daily-prompt journaling PWA. You a
 8. `MILESTONE_2.md` — step-by-step for the second milestone (reminders + grace day) — COMPLETE
 9. `MILESTONE_2.1.md` — small follow-on to M2 (warm notes on Today screen)
 10. `MILESTONE_3.md` — step-by-step for the third milestone (admin)
+11. `MILESTONE_4.md` — step-by-step for the fourth milestone (moderation, launch gate)
 
-M1 and M2 are complete. M2.1 is a small, focused follow-on (warm notes on the Today screen) that should ship before or alongside M3. Read the milestone file the user points you at; do not jump ahead. M2.1 and M3 can be developed in parallel — they touch different surfaces.
+M1, M2, M2.1, and M3 are all complete. M3 is locked — no changes to existing M3 code; if M4 needs touchups to M3 surfaces, those are framed as M4 enhancements (see MILESTONE_4.md "Important: M3 already shipped without M4 in mind"). M4 is the **launch gate** — after M4 ships and a 5–7 day validation period passes, the app is safe to open to a wider audience. Until then, keep the user base to friends. Read the milestone file the user points you at; do not jump ahead.
 
 ## Environment
 

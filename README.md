@@ -46,11 +46,11 @@ Timezone-correct date handling, grace day mechanic, web push subscription + send
 **M2.1 — Warm notes** ← SMALL FOLLOW-ON
 A soft note (encouragement, observation, light humor) shown on the Today screen — one before posting, one after. Pool hardcoded for now; admin CRUD lands in M3. See MILESTONE_2.1.md.
 
-**M3 — Admin** (in progress in parallel)
-Admin route gated by `is_admin`, prompt CRUD UI (unblocks adding more prompts and notes), all-posts dashboard with manual moderation/hide, featured posts + public `/p/{id}` route, share-card PNG generation, admin invite flow. See MILESTONE_3.md.
+**M3 — Admin** ✅ COMPLETE
+Admin route gated by `is_admin`, prompt CRUD UI, all-posts dashboard with manual moderation/hide, featured posts + public `/p/{id}` route, share-card PNG generation, admin invite flow.
 
-**M4 — Moderation**
-Automated moderation on post submit, admin review queue, the share permission toggles in the composer.
+**M4 — Moderation** ← LAUNCH GATE
+Automated text + image moderation, admin review queue, share permission toggles in the composer (load-bearing now that posts will be featured externally), eligibility logic, wellbeing-aware view, rate limits, cost guards. Includes a small Step 5.5 polish to M3's admin UI (eligibility badges, disabled feature button for non-eligible posts) — this is M4-driven, not an M3 modification. After this ships and goes through a 5–7 day validation period, the app is safe to open to a wider audience. See MILESTONE_4.md.
 
 **M5 — Public share page**
 `/p/[id]` route polish with social meta tags, anonymous vs named display logic, og:image generation.

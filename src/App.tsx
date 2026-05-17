@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
-import { ProfileProvider } from './lib/ProfileContext'
+import { ProfileProvider, useProfile } from './lib/ProfileContext'
 import { supabase } from './lib/supabase'
 import SignIn from './screens/SignIn'
 import Onboarding from './screens/Onboarding'
 import Today from './screens/Today'
 import History from './screens/History'
 import Profile from './screens/Profile'
+import Deactivated from './screens/Deactivated'
 import PaletteDebug from './screens/PaletteDebug'
 import BottomNav from './components/BottomNav'
 import RequireAdmin from './components/RequireAdmin'
@@ -31,6 +32,14 @@ function Spinner() {
       />
     </div>
   )
+}
+
+function DeactivationGate({ children }: { children: ReactNode }) {
+  const { user } = useAuth()
+  const profile = useProfile()
+  if (user && profile === null) return <Spinner />
+  if (profile?.isDeactivated) return <Deactivated />
+  return <>{children}</>
 }
 
 function AuthedApp() {
@@ -130,10 +139,12 @@ export default function App() {
   return (
     <ProfileProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/admin/*" element={<AdminApp />} />
-          <Route path="*" element={<AuthedApp />} />
-        </Routes>
+        <DeactivationGate>
+          <Routes>
+            <Route path="/admin/*" element={<AdminApp />} />
+            <Route path="*" element={<AuthedApp />} />
+          </Routes>
+        </DeactivationGate>
       </BrowserRouter>
     </ProfileProvider>
   )

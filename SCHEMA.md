@@ -122,14 +122,53 @@ M4. Auto-flagged + admin-flagged posts.
 create table moderation_queue (
   id uuid primary key default gen_random_uuid(),
   post_id uuid not null references posts(id) on delete cascade,
-  reason text not null, -- 'auto_text', 'auto_image', 'admin_flag'
+  reason text not null, -- 'auto_text', 'auto_image', 'admin_flag', 'wellbeing'
   scores jsonb, -- raw moderation API output
+  categories text[], -- e.g. ['hate', 'harassment'] for easy filtering
   reviewed_by uuid references profiles(id),
   reviewed_at timestamptz,
   decision text check (decision in ('approve', 'hide', 'ignore')),
   created_at timestamptz not null default now()
 );
+
+create index on moderation_queue(post_id);
+create index on moderation_queue(reviewed_at) where reviewed_at is null;
+create index on moderation_queue(reason);
 ```
+
+The `wellbeing` reason is handled specially per M4 Step 7 — read-only admin awareness for self-harm signals, never surfaces to the author, no audit log entries.
+
+### `moderation_errors`
+M4. When an external moderation API call fails. Used by the retry cron and the admin "needs attention" view.
+
+```sql
+create table moderation_errors (
+  id uuid primary key default gen_random_uuid(),
+  post_id uuid not null references posts(id) on delete cascade,
+  api text not null check (api in ('openai_text', 'google_vision')),
+  error text not null, -- message
+  attempt int not null default 1,
+  created_at timestamptz not null default now()
+);
+
+create index on moderation_errors(post_id);
+```
+
+After 3 failed retries the post stays `pending` and surfaces in the admin moderation screen's "Errored" tab.
+
+### `api_usage`
+M4. Daily counters for external API calls. Powers the circuit breaker.
+
+```sql
+create table api_usage (
+  date date not null,
+  api text not null check (api in ('openai_text', 'google_vision')),
+  call_count int not null default 0,
+  primary key (date, api)
+);
+```
+
+Reset daily via cron; counters increment from the Edge Functions.
 
 ### `featured_posts`
 M3. Admin-curated posts to surface on a public site.
@@ -348,8 +387,37 @@ create policy "admins read all posts" on posts
 - Users read own
 - Writes only via server function
 
-### `moderation_queue`, `featured_posts`
+### `moderation_queue`, `moderation_errors`, `featured_posts`
 - Admin read/write only
+- Writes by Edge Functions happen via service role (bypasses RLS)
+
+```sql
+alter table moderation_queue enable row level security;
+alter table moderation_errors enable row level security;
+
+create policy "admins manage moderation queue" on moderation_queue
+  for all using (
+    exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+  );
+
+create policy "admins read moderation errors" on moderation_errors
+  for select using (
+    exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+  );
+```
+
+### `api_usage`
+- Admin read-only (visibility)
+- Writes only via service role (Edge Functions)
+
+```sql
+alter table api_usage enable row level security;
+
+create policy "admins read api usage" on api_usage
+  for select using (
+    exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+  );
+```
 
 ### `push_subscriptions`
 - Users read/write own
@@ -747,6 +815,112 @@ begin
 
   insert into admin_audit (target_post, action, actor)
     values (post_id, 'post_unfeatured', v_actor_id);
+end $$;
+```
+
+### View: featurable_posts (M4)
+
+Single source of truth for "can this post be featured externally?" Used by admin UIs and the public `/p/{id}` page check.
+
+```sql
+create or replace view featurable_posts as
+select p.*
+from posts p
+where p.moderation_status = 'approved'
+  and (p.share_anonymous = true or p.share_with_name = true);
+```
+
+Querying this view replaces ad-hoc `WHERE moderation_status = ... AND share_...` filters in client code. Easier to reason about, single point of change.
+
+### Trigger: auto-unfeature on share permission revoke (M4)
+
+If a user toggles share permissions off on a featured post, automatically unfeature it.
+
+```sql
+create or replace function auto_unfeature_on_revoke()
+returns trigger language plpgsql as $$
+begin
+  -- If either share flag dropped to false, check if this kills eligibility
+  if (old.share_anonymous = true and new.share_anonymous = false)
+     or (old.share_with_name = true and new.share_with_name = false)
+     or (old.moderation_status = 'approved' and new.moderation_status != 'approved')
+  then
+    -- Unfeature if currently featured and now not eligible
+    update featured_posts
+    set unfeatured_at = now()
+    where post_id = new.id
+      and unfeatured_at is null
+      and not exists (
+        select 1 from featurable_posts where id = new.id
+      );
+
+    -- If we actually unfeatured, log it
+    if found then
+      insert into admin_audit (target_post, action, reason)
+        values (new.id, 'post_unfeatured', 'auto: share permission revoked or moderation status changed');
+    end if;
+  end if;
+  return new;
+end $$;
+
+create trigger auto_unfeature_trigger
+  after update on posts
+  for each row
+  when (
+    old.share_anonymous is distinct from new.share_anonymous
+    or old.share_with_name is distinct from new.share_with_name
+    or old.moderation_status is distinct from new.moderation_status
+  )
+  execute function auto_unfeature_on_revoke();
+```
+
+The `actor` is null since this is an automated action, not an admin decision. The admin notification surfaces via a "recent automated unfeatures" view in the admin dashboard.
+
+### Function: extend feature_post for moderation check (M4)
+
+The M3 `feature_post()` function only checks share permissions. Extend it to also require approved moderation status.
+
+```sql
+-- M4 modification to the existing function
+create or replace function feature_post(post_id uuid, display_mode_arg text)
+returns featured_posts
+language plpgsql security definer as $$
+declare
+  v_actor_id uuid := auth.uid();
+  v_is_admin boolean;
+  v_post posts;
+  v_featured featured_posts;
+begin
+  select is_admin into v_is_admin from profiles where id = v_actor_id;
+  if not v_is_admin then raise exception 'not authorized'; end if;
+
+  if display_mode_arg not in ('anonymous', 'with_name') then
+    raise exception 'display_mode must be anonymous or with_name';
+  end if;
+
+  select * into v_post from posts where id = post_id;
+  if not found then raise exception 'post not found'; end if;
+
+  -- M4: require approved moderation status
+  if v_post.moderation_status != 'approved' then
+    raise exception 'post is not approved for featuring (status: %)', v_post.moderation_status;
+  end if;
+
+  -- M3: verify share permission matches requested display mode
+  if display_mode_arg = 'with_name' and not v_post.share_with_name then
+    raise exception 'user has not granted with-name share permission';
+  end if;
+  if display_mode_arg = 'anonymous' and not v_post.share_anonymous then
+    raise exception 'user has not granted anonymous share permission';
+  end if;
+
+  insert into featured_posts (post_id, display_mode, featured_by)
+    values (post_id, display_mode_arg, v_actor_id)
+    returning * into v_featured;
+
+  insert into admin_audit (target_post, action, actor)
+    values (post_id, 'post_featured', v_actor_id);
+  return v_featured;
 end $$;
 ```
 

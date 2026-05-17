@@ -44,6 +44,8 @@ export default function Profile() {
   const [timezone, setTimezone] = useState('')
   const [tzSaving, setTzSaving] = useState(false)
   const [tzSaved, setTzSaved] = useState(false)
+  const [confirmDeactivate, setConfirmDeactivate] = useState(false)
+  const [deactivating, setDeactivating] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -110,6 +112,12 @@ export default function Profile() {
       if (ok) setNotifEnabled(true)
     }
     setNotifWorking(false)
+  }
+
+  async function handleDeactivate() {
+    setDeactivating(true)
+    await supabase.rpc('deactivate_account')
+    await signOut()
   }
 
   async function saveName() {
@@ -314,9 +322,35 @@ export default function Profile() {
           >
             Sign out
           </button>
-          <p className="text-xs text-gray-400 text-center pt-2">
-            To delete your account, email the admin.
-          </p>
+          {!confirmDeactivate ? (
+            <button
+              onClick={() => setConfirmDeactivate(true)}
+              className="w-full rounded-xl py-2.5 text-sm font-medium text-gray-400 border border-gray-100 transition-opacity active:opacity-70"
+            >
+              Deactivate account
+            </button>
+          ) : (
+            <div className="rounded-xl border border-red-100 bg-red-50 p-3 space-y-2">
+              <p className="text-xs text-red-700 font-medium text-center">
+                Deactivate your account? You can reactivate anytime by signing back in.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfirmDeactivate(false)}
+                  className="flex-1 rounded-lg py-2 text-xs font-medium border border-gray-200 text-gray-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeactivate}
+                  disabled={deactivating}
+                  className="flex-1 rounded-lg py-2 text-xs font-medium text-white bg-red-500 disabled:opacity-50"
+                >
+                  {deactivating ? 'Deactivating…' : 'Yes, deactivate'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
