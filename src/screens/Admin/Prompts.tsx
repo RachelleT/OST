@@ -105,6 +105,7 @@ function PromptModal({
 export default function AdminPrompts() {
   const [prompts, setPrompts] = useState<Prompt[]>([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
   const [modal, setModal] = useState<ModalState>({ open: false, id: null, text: '' })
   const [togglingId, setTogglingId] = useState<string | null>(null)
 
@@ -175,6 +176,20 @@ export default function AdminPrompts() {
         </button>
       </div>
 
+      {/* Search */}
+      <div className="mb-4">
+        <label htmlFor="prompt-search" className="sr-only">Search prompts</label>
+        <input
+          id="prompt-search"
+          type="search"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search prompts…"
+          className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2"
+          style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
+        />
+      </div>
+
       {loading ? (
         <div className="space-y-3">
           {[1,2,3].map(i => (
@@ -185,7 +200,9 @@ export default function AdminPrompts() {
         <p className="text-sm text-gray-500 text-center py-12">No prompts yet.</p>
       ) : (
         <div className="space-y-2">
-          {prompts.map(p => (
+          {prompts
+            .filter(p => !search.trim() || p.text.toLowerCase().includes(search.trim().toLowerCase()))
+            .map(p => (
             <div
               key={p.id}
               className="rounded-2xl bg-white p-4 shadow-sm flex items-start gap-4"
@@ -229,6 +246,11 @@ export default function AdminPrompts() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Empty search result */}
+      {!loading && search.trim() && prompts.filter(p => p.text.toLowerCase().includes(search.trim().toLowerCase())).length === 0 && (
+        <p className="text-sm text-gray-500 text-center py-8">No prompts match "{search}"</p>
       )}
 
       {modal.open && (

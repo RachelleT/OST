@@ -16,7 +16,7 @@ interface PostRow {
   moderation_status: string
   share_anonymous: boolean
   share_with_name: boolean
-  prompts: { text: string }[] | null
+  prompts: { text: string } | null
 }
 
 function HistoryPhoto({ storagePath }: { storagePath: string }) {
@@ -216,13 +216,13 @@ export default function History() {
                           </p>
                         ) : (
                           <>
-                            {post.prompts?.[0]?.text && (
-                              <p className="text-xs text-gray-400 italic mb-1 line-clamp-1">
-                                {post.prompts[0].text}
+                            {post.prompts?.text && (
+                              <p className="text-xs font-medium text-gray-400 mb-2 leading-snug">
+                                {post.prompts.text}
                               </p>
                             )}
                             {post.text && (
-                              <p className="text-sm text-gray-800 leading-relaxed line-clamp-3">
+                              <p className="text-sm text-gray-800 leading-relaxed">
                                 {post.text}
                               </p>
                             )}
