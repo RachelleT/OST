@@ -58,7 +58,7 @@ function todayUTC() {
 }
 
 function weekStartUTC() {
-  const d = startOfWeek(new Date(), { weekStartsOn: 1 })
+  const d = startOfWeek(new Date(), { weekStartsOn: 0 })
   return d.toISOString().slice(0, 10)
 }
 

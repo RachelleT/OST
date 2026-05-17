@@ -63,10 +63,37 @@ function InviteModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
     if (!email.trim()) { setError('Enter an email address'); return }
     setSaving(true)
     setError('')
+
+    // Create the DB invite record (auto-promotes if they already have an account)
     const { data, error: rpcError } = await supabase.rpc('invite_admin', { p_email: email.trim() })
+    if (rpcError) { setSaving(false); setError(rpcError.message); return }
+
+    const outcome = data as string
+
+    // If this is a new-user invite, send the actual invite email via Edge Function
+    if (outcome === 'invited') {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-admin-invite`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token ?? ''}`,
+          },
+          body: JSON.stringify({ email: email.trim() }),
+        }
+      )
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        setSaving(false)
+        setError(body.error ?? 'Failed to send invite email')
+        return
+      }
+    }
+
     setSaving(false)
-    if (rpcError) { setError(rpcError.message); return }
-    setResult(data as string)
+    setResult(outcome)
   }
 
   if (result) {
