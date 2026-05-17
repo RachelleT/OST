@@ -201,7 +201,7 @@ export default function AdminModeration() {
   ]
 
   return (
-    <div className="px-5 py-8 w-full max-w-3xl">
+    <div className="px-5 py-8 pb-24 w-full max-w-3xl">
       <h1 className="text-xl font-semibold text-gray-900 mb-6">Moderation</h1>
 
       {/* Tabs */}

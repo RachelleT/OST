@@ -61,7 +61,7 @@ export default function AdminFeatured() {
 
   if (loading) {
     return (
-      <div className="px-5 py-8 w-full max-w-3xl">
+      <div className="px-5 py-8 pb-24 w-full max-w-3xl">
         <h1 className="text-xl font-semibold text-gray-900 mb-6">Featured</h1>
         <div className="space-y-3">
           {[1,2,3].map(i => <div key={i} className="h-20 rounded-2xl bg-gray-100 animate-pulse" />)}
@@ -71,7 +71,7 @@ export default function AdminFeatured() {
   }
 
   return (
-    <div className="px-5 py-8 w-full max-w-3xl">
+    <div className="px-5 py-8 pb-24 w-full max-w-3xl">
       <h1 className="text-xl font-semibold text-gray-900 mb-6">Featured</h1>
 
       {rows.length === 0 ? (

@@ -520,7 +520,7 @@ export default function AdminPosts() {
   ]
 
   return (
-    <div className="px-5 py-8 w-full max-w-3xl">
+    <div className="px-5 py-8 pb-24 w-full max-w-3xl">
       <h1 className="text-xl font-semibold text-gray-900 mb-6">Posts</h1>
 
       <MetricsBar metrics={metrics} />
