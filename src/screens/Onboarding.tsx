@@ -70,7 +70,7 @@ export default function Onboarding({ onComplete }: Props) {
               {[
                 { icon: '🌅', text: 'One new prompt every day, chosen just for you' },
                 { icon: '✏️', text: 'Respond with up to 280 characters or a photo' },
-                { icon: '🔥', text: 'Build a streak — a grace day protects you if life gets busy' },
+                { icon: '🔥', text: 'Build a streak — show up every day and watch it grow' },
                 { icon: '🔒', text: 'Your posts are private by default — share only if you choose' },
               ].map(({ icon, text }) => (
                 <li key={text} className="flex items-start gap-4">

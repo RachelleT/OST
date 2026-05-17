@@ -97,18 +97,6 @@ export default function PostCard({
         </div>
       )}
 
-      {/* Grace day notice */}
-      {graceUsed && graceDayName && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="rounded-2xl px-4 py-3 text-sm font-medium"
-          style={{ background: palette.surface, color: palette.accent }}
-        >
-          ✦ We used your grace day for {graceDayName} — your streak is safe!
-        </div>
-      )}
-
       {/* Post content card */}
       <div className="rounded-3xl p-4 bg-white space-y-3">
         {post.text && (
