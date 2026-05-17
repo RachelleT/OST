@@ -155,7 +155,7 @@ export default function Profile() {
   const showInstallFirst = ios && !installed
 
   return (
-    <div className="min-h-full pb-20" style={{ background: NEUTRAL_BG }}>
+    <div className="min-h-full pb-32" style={{ background: NEUTRAL_BG }}>
       <div className="px-5 pt-12 space-y-6">
         <h1 className="text-xl font-semibold text-gray-900">You</h1>
 
