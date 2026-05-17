@@ -77,6 +77,14 @@ export default function Profile() {
       .from('profiles')
       .update({ reminder_time: value })
       .eq('id', user.id)
+
+    // Picking a time implicitly means "turn on notifications"
+    if (value && !notifEnabled && showNotifToggle) {
+      setNotifWorking(true)
+      const { ok } = await subscribeToPush()
+      if (ok) setNotifEnabled(true)
+      setNotifWorking(false)
+    }
   }
 
   function detectTimezone() {
