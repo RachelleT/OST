@@ -56,10 +56,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) { setProfile(null); return }
-    fetchProfile(user.id)
+    const uid = user.id
+    fetchProfile(uid)
 
     // Re-fetch when Profile screen saves a change (name, timezone, etc.)
-    function onUpdated() { fetchProfile(user.id) }
+    function onUpdated() { fetchProfile(uid) }
     window.addEventListener('profile-updated', onUpdated)
     return () => window.removeEventListener('profile-updated', onUpdated)
   }, [user])
