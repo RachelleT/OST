@@ -6,6 +6,7 @@ import { useTodayPrompt } from '../hooks/useTodayPrompt'
 import { useTodayPost } from '../hooks/usePost'
 import type { Post } from '../hooks/usePost'
 import { useStreak } from '../hooks/useStreak'
+import { useProfile } from '../lib/ProfileContext'
 import { supabase } from '../lib/supabase'
 import { noteForToday } from '../lib/notes'
 import type { Note } from '../lib/notes'
@@ -22,12 +23,12 @@ const palette = dayPalette(today)
 
 export default function Today() {
   const { user } = useAuth()
+  const profile = useProfile()
   const { data: prompt, isLoading: promptLoading, error: promptError } = useTodayPrompt()
   const { post: existingPost, isLoading: postLoading, isEditable, setPost } = useTodayPost()
   const [editing, setEditing] = useState(false)
   const [streakKey, setStreakKey] = useState(0)
   const { current: currentStreak } = useStreak(streakKey)
-  const [displayName, setDisplayName] = useState<string | null>(null)
   const [profileReminderTime, setProfileReminderTime] = useState<string | null>(null)
 
   // Derive the active post: prefer the freshly submitted one
@@ -41,14 +42,11 @@ export default function Today() {
     if (!user) return
     supabase
       .from('profiles')
-      .select('display_name, reminder_time')
+      .select('reminder_time')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
-        if (data) {
-          setDisplayName(data.display_name as string)
-          setProfileReminderTime(data.reminder_time as string | null)
-        }
+        if (data) setProfileReminderTime(data.reminder_time as string | null)
       })
   }, [user])
 
@@ -105,7 +103,7 @@ export default function Today() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <p className="text-base font-semibold" style={{ color: palette.textOnBg }}>
-                Hey, {displayName ?? ''}!
+                {profile?.displayName ? `Hey, ${profile.displayName}!` : 'Hey!'}
               </p>
               <p className="text-xs mt-0.5" style={{ color: palette.textOnBg, opacity: 0.55 }}>
                 {format(today, 'EEEE, MMMM d')}

@@ -126,10 +126,6 @@ export default function Profile() {
       setNameError('Name must be 3–30 characters')
       return
     }
-    if (!/^[a-zA-Z0-9 ]+$/.test(trimmed)) {
-      setNameError('Letters, numbers, and spaces only')
-      return
-    }
     setNameError('')
     setIsSaving(true)
     const { error } = await supabase
@@ -137,7 +133,9 @@ export default function Profile() {
       .update({ display_name: trimmed })
       .eq('id', user!.id)
     setIsSaving(false)
-    if (!error) {
+    if (error) {
+      setNameError('Failed to save — please try again')
+    } else {
       setProfile(p => p ? { ...p, display_name: trimmed } : p)
       setSavedToast(true)
       setTimeout(() => setSavedToast(false), 2500)

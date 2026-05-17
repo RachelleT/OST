@@ -51,6 +51,7 @@ export default function History() {
   const { user } = useAuth()
   const [posts, setPosts] = useState<PostRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   async function updateShareNamed(postId: string, value: boolean) {
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, share_with_name: value } : p))
@@ -64,7 +65,8 @@ export default function History() {
       .select('id, date, text, photo_url, moderation_status, share_anonymous, share_with_name, prompts(text)')
       .eq('user_id', user.id)
       .order('date', { ascending: false })
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) { setLoadError(true); setIsLoading(false); return }
         setPosts((data as unknown as PostRow[]) ?? [])
         setIsLoading(false)
       })
@@ -100,6 +102,14 @@ export default function History() {
     ;(acc[label] ??= []).push(post)
     return acc
   }, {})
+
+  if (loadError) return (
+    <div className="min-h-full flex items-center justify-center pb-32" style={{ background: NEUTRAL_BG }}>
+      <p className="text-sm text-gray-500 text-center px-6">
+        Couldn't load your history. Pull to refresh or try again later.
+      </p>
+    </div>
+  )
 
   return (
     <div className="min-h-full pb-32" style={{ background: NEUTRAL_BG }}>
