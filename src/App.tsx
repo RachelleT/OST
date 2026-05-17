@@ -18,6 +18,7 @@ import AdminNotes from './screens/Admin/Notes'
 import AdminPosts from './screens/Admin/Posts'
 import AdminFeatured from './screens/Admin/Featured'
 import AdminAdmins from './screens/Admin/Admins'
+import AdminUsers from './screens/Admin/Users'
 import AdminModeration from './screens/Admin/Moderation'
 import PublicPost from './screens/PublicPost'
 
@@ -68,6 +69,7 @@ function AdminApp() {
           <Route path="notes"    element={<AdminNotes />} />
           <Route path="posts"    element={<AdminPosts />} />
           <Route path="featured"    element={<AdminFeatured />} />
+          <Route path="users"       element={<AdminUsers />} />
           <Route path="admins"      element={<AdminAdmins />} />
           <Route path="moderation"  element={<AdminModeration />} />
         </Route>

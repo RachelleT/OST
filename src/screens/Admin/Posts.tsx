@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { format, startOfWeek } from 'date-fns'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { dayPalette } from '../../lib/palette'
 import ShareCard from '../../components/ShareCard'
@@ -64,18 +65,24 @@ function weekStartLocal() {
 // ── Metrics widget ─────────────────────────────────────────────────────────
 
 function MetricsBar({ metrics }: { metrics: Metrics | null }) {
+  const navigate = useNavigate()
   const items = [
-    { label: 'Total users',     value: metrics?.totalUsers    ?? '—' },
-    { label: 'Posts today',     value: metrics?.postsToday    ?? '—' },
-    { label: 'Posts this week', value: metrics?.postsThisWeek ?? '—' },
-    { label: 'Hidden',          value: metrics?.hiddenPosts   ?? '—' },
+    { label: 'Total users',     value: metrics?.totalUsers    ?? '—', onClick: () => navigate('/admin/users') },
+    { label: 'Posts today',     value: metrics?.postsToday    ?? '—', onClick: undefined },
+    { label: 'Posts this week', value: metrics?.postsThisWeek ?? '—', onClick: undefined },
+    { label: 'Hidden',          value: metrics?.hiddenPosts   ?? '—', onClick: undefined },
   ]
   return (
     <div className="grid grid-cols-4 gap-3 mb-6">
-      {items.map(({ label, value }) => (
-        <div key={label} className="rounded-2xl bg-white p-3 text-center shadow-sm">
+      {items.map(({ label, value, onClick }) => (
+        <div
+          key={label}
+          onClick={onClick}
+          className={`rounded-2xl bg-white p-3 text-center shadow-sm ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+        >
           <p className="text-xl font-bold text-gray-900">{value}</p>
           <p className="text-xs text-gray-500 mt-0.5 leading-tight">{label}</p>
+          {onClick && <p className="text-[10px] text-gray-300 mt-0.5">tap to view →</p>}
         </div>
       ))}
     </div>

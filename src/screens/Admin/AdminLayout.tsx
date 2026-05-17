@@ -18,6 +18,7 @@ const BASE_NAV: Omit<NavItem, 'badge'>[] = [
   { to: '/admin/prompts',     label: 'Prompts',    icon: '✦' },
   { to: '/admin/notes',       label: 'Notes',      icon: '🌱' },
   { to: '/admin/posts',       label: 'Posts',      icon: '📋' },
+  { to: '/admin/users',       label: 'Users',      icon: '👥' },
   { to: '/admin/featured',    label: 'Featured',   icon: '⭐' },
   { to: '/admin/moderation',  label: 'Queue',      icon: '🛡️' },
   { to: '/admin/admins',      label: 'Admins',     icon: '🔑' },
