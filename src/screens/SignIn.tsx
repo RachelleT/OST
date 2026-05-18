@@ -1,12 +1,58 @@
 import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 
+function InstallSheet({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      style={{ background: 'rgba(0,0,0,0.4)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div className="bg-white w-full max-w-sm rounded-t-3xl p-6 space-y-5 pb-10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-gray-900">Add to home screen</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="rounded-2xl bg-gray-50 p-4 space-y-2">
+          <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+            <span aria-hidden="true">🍎</span> iPhone
+          </p>
+          <ol className="text-sm text-gray-600 space-y-1 list-none">
+            <li>1. Open in <strong>Safari</strong></li>
+            <li>2. Tap the <strong>Share</strong> button <span className="text-gray-400">(box with arrow at the bottom)</span></li>
+            <li>3. Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+          </ol>
+        </div>
+
+        <div className="rounded-2xl bg-gray-50 p-4 space-y-2">
+          <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+            <span aria-hidden="true">🤖</span> Android
+          </p>
+          <ol className="text-sm text-gray-600 space-y-1 list-none">
+            <li>1. Open in <strong>Chrome</strong></li>
+            <li>2. Tap the <strong>⋮ menu</strong> in the top right</li>
+            <li>3. Tap <strong>"Add to Home screen"</strong></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function SignIn() {
   const { signIn, verifyOtp } = useAuth()
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'sent' | 'verifying' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [showInstall, setShowInstall] = useState(false)
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -148,6 +194,18 @@ export default function SignIn() {
           </div>
         )}
       </div>
+
+      {/* Install hint */}
+      <button
+        onClick={() => setShowInstall(true)}
+        className="mt-8 flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+        aria-label="How to add to home screen"
+      >
+        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 text-gray-400 text-xs font-semibold leading-none">?</span>
+        Add to home screen
+      </button>
+
+      {showInstall && <InstallSheet onClose={() => setShowInstall(false)} />}
     </div>
   )
 }
