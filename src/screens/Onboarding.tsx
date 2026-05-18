@@ -208,8 +208,9 @@ export default function Onboarding({ onComplete }: Props) {
                 </p>
                 <ol className="text-sm text-gray-600 space-y-1 list-none">
                   <li>1. Open in <strong>Safari</strong></li>
-                  <li>2. Tap the <strong>Share</strong> button <span className="text-gray-400">(box with arrow at the bottom)</span></li>
-                  <li>3. Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                  <li>2. Tap the <strong>···</strong> button at the bottom</li>
+                  <li>3. Tap the <strong>Share</strong> button</li>
+                  <li>4. Scroll down and tap <strong>"Add to Home Screen"</strong></li>
                 </ol>
               </div>
               <div className="rounded-2xl bg-white p-4 space-y-2">
