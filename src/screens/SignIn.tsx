@@ -98,6 +98,7 @@ export default function SignIn() {
 
         {status === 'idle' || status === 'loading' || status === 'error' ? (
           <form onSubmit={handleEmailSubmit} className="space-y-4" noValidate>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email address
@@ -128,6 +129,17 @@ export default function SignIn() {
             >
               {status === 'loading' ? 'Sending…' : 'Continue'}
             </button>
+
+            <div className="flex justify-center pt-2">
+              <button
+                type="button"
+                onClick={() => setShowInstall(true)}
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 text-xs font-semibold leading-none">?</span>
+                Add to home screen
+              </button>
+            </div>
           </form>
         ) : (
           <div className="space-y-5">
@@ -191,20 +203,20 @@ export default function SignIn() {
               >
                 Use a different email
               </button>
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowInstall(true)}
+                  className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors mx-auto"
+                >
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 text-xs font-semibold leading-none">?</span>
+                  Add to home screen
+                </button>
+              </div>
             </div>
           </div>
         )}
       </div>
-
-      {/* Install hint */}
-      <button
-        onClick={() => setShowInstall(true)}
-        className="mt-8 flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
-        aria-label="How to add to home screen"
-      >
-        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 text-gray-400 text-xs font-semibold leading-none">?</span>
-        Add to home screen
-      </button>
 
       {showInstall && <InstallSheet onClose={() => setShowInstall(false)} />}
     </div>
