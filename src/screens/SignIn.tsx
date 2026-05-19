@@ -36,6 +36,7 @@ function InstallSheet({ onClose }: { onClose: () => void }) {
           <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
             <span aria-hidden="true">🤖</span> Android
           </p>
+          <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-2 py-1">Must use <strong>Chrome</strong> — Samsung Internet won't install it as an app</p>
           <ol className="text-sm text-gray-600 space-y-1 list-none">
             <li>1. Open in <strong>Chrome</strong></li>
             <li>2. Tap the <strong>⋮ menu</strong> in the top right</li>
