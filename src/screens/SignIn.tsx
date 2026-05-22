@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { getInstallPrompt, triggerInstall, onInstallPromptChange } from '../lib/pwaInstall'
 
-function InstallSheet({ onClose }: { onClose: () => void }) {
+function InstallSheet({ onClose, onInstall }: { onClose: () => void; onInstall?: () => void }) {
+  const canInstall = onInstall != null
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center"
@@ -36,12 +39,29 @@ function InstallSheet({ onClose }: { onClose: () => void }) {
           <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
             <span aria-hidden="true">🤖</span> Android
           </p>
-          <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-2 py-1">Must use <strong>Chrome</strong> — Samsung Internet won't install it as an app</p>
-          <ol className="text-sm text-gray-600 space-y-1 list-none">
-            <li>1. Open in <strong>Chrome</strong></li>
-            <li>2. Tap the <strong>⋮ menu</strong> in the top right</li>
-            <li>3. Tap <strong>"Add to Home screen"</strong></li>
-          </ol>
+          {canInstall ? (
+            <>
+              <p className="text-xs text-teal-700 bg-teal-50 rounded-lg px-2 py-1">
+                Your browser supports native install — use the button below for the best experience.
+              </p>
+              <button
+                onClick={() => { onInstall(); onClose() }}
+                className="w-full rounded-full py-2.5 text-sm font-medium text-white transition-transform active:scale-95 mt-1"
+                style={{ background: '#04342C' }}
+              >
+                Install app
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-2 py-1">Must use <strong>Chrome</strong> — Samsung Internet won't install it as an app</p>
+              <ol className="text-sm text-gray-600 space-y-1 list-none">
+                <li>1. Open in <strong>Chrome</strong></li>
+                <li>2. Tap the <strong>⋮ menu</strong> in the top right</li>
+                <li>3. Tap <strong>"Add to Home screen"</strong></li>
+              </ol>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -55,6 +75,16 @@ export default function SignIn() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'sent' | 'verifying' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [showInstall, setShowInstall] = useState(false)
+  const [canInstall, setCanInstall] = useState(() => getInstallPrompt() !== null)
+
+  useEffect(() => {
+    return onInstallPromptChange(() => setCanInstall(getInstallPrompt() !== null))
+  }, [])
+
+  async function handleInstall() {
+    await triggerInstall()
+    setCanInstall(false)
+  }
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -132,14 +162,26 @@ export default function SignIn() {
             </button>
 
             <div className="flex justify-center pt-2">
-              <button
-                type="button"
-                onClick={() => setShowInstall(true)}
-                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 text-xs font-semibold leading-none">?</span>
-                Add to home screen
-              </button>
+              {canInstall ? (
+                <button
+                  type="button"
+                  onClick={handleInstall}
+                  className="flex items-center gap-1.5 text-xs font-medium transition-colors"
+                  style={{ color: '#2DBFA8' }}
+                >
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold leading-none" style={{ background: '#E1F5EE', color: '#04342C' }}>↓</span>
+                  Install app
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowInstall(true)}
+                  className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 text-xs font-semibold leading-none">?</span>
+                  Add to home screen
+                </button>
+              )}
             </div>
           </form>
         ) : (
@@ -204,22 +246,39 @@ export default function SignIn() {
               >
                 Use a different email
               </button>
-              <div className="pt-1">
-                <button
-                  type="button"
-                  onClick={() => setShowInstall(true)}
-                  className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors mx-auto"
-                >
-                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 text-xs font-semibold leading-none">?</span>
-                  Add to home screen
-                </button>
+              <div className="pt-1 flex justify-center">
+                {canInstall ? (
+                  <button
+                    type="button"
+                    onClick={handleInstall}
+                    className="flex items-center gap-1.5 text-xs font-medium transition-colors"
+                    style={{ color: '#2DBFA8' }}
+                  >
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold leading-none" style={{ background: '#E1F5EE', color: '#04342C' }}>↓</span>
+                    Install app
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowInstall(true)}
+                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 text-xs font-semibold leading-none">?</span>
+                    Add to home screen
+                  </button>
+                )}
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {showInstall && <InstallSheet onClose={() => setShowInstall(false)} />}
+      {showInstall && (
+        <InstallSheet
+          onClose={() => setShowInstall(false)}
+          onInstall={canInstall ? handleInstall : undefined}
+        />
+      )}
     </div>
   )
 }
