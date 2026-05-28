@@ -119,16 +119,38 @@ For M2.1, seed with these — they live in `src/data/notes.ts`:
 
 ## Privacy & sharing
 
-Posts are private by default. Two independent toggles per post, both default OFF:
+**Current model (as of M5)**: posts are private by default. The user has one per-post decision and one global identity preference.
 
-- **Allow anonymous use**: admin may feature this post on external surfaces (website, social media share images) without the user's name
-- **Allow with my name**: admin may feature this post with the user's display name attached
+- **Per-post**: `is_public` (default `false`). When the user toggles this ON, the post appears on the Feed for all signed-in users and becomes eligible for admin to feature on external surfaces (homepage cards, og:images, `/p/{id}`).
+- **Global**: `show_name_on_shared` setting in Settings (default `false`). When OFF, the user's shared posts appear without a byline. When ON, shared posts are shown with the user's display name.
 
-A post with anonymous=true and named=false can be featured but only without identifying the author.
-A post with both true gives admin the choice at share time.
-A post with both false is fully private — admin can see it (for moderation) but cannot publish it anywhere.
+Each user controls:
+- Whether the post is public at all (the toggle)
+- Whether their name appears on any of their public posts (the global setting)
 
-Users can toggle these on past posts from the history view at any time. Revoking permission on a previously-featured post triggers an admin notification and the post is auto-unfeatured.
+The two controls combine: a public post by a user with `show_name_on_shared = false` is shown publicly with no byline. A public post by a user with `show_name_on_shared = true` is shown with "— {display_name}". Toggling the global setting affects all the user's existing shared posts immediately.
+
+**Defaults are private**: every new post defaults to private; every new account defaults to no-name-on-shared. The user has to actively choose to share each post and actively choose to be identified.
+
+**Existing post migration (M5)**: posts that existed before the M5 sharing model are migrated to `is_public = false`. They stay private regardless of the previous `share_anonymous` value, because they were written under different assumptions.
+
+### Historical models
+
+The original spec had two per-post toggles (`share_anonymous`, `share_with_name`), both default OFF. M4 shipped with `share_anonymous` defaulting TRUE (a deviation documented in MILESTONE_4.md's "As built" section). M5 collapsed these into the single-toggle-plus-global-setting model documented above. Old columns were dropped in migration 0020.
+
+## Feed
+
+A fourth nav tab inside the app (M5 onward) showing posts users have chosen to share publicly.
+
+- Shows all posts where `is_public = true AND moderation_status = 'approved'`
+- Chronological, newest first, infinite scroll, all-time
+- Read-only with **one** reaction type: ✨ (sparkles). Each user can react at most once per post; tapping again removes the reaction.
+- No comments, no following, no DMs. The Feed is for reading and a single low-stakes signal.
+- Reaction counts are visible to all; the *list* of who reacted is not (privacy).
+- Posts on the Feed display the author's name only if that author's global `show_name_on_shared` is true.
+- Existing posts (predating M5) are excluded from the Feed entirely — they migrated to `is_public = false`. Authors can retroactively flip the toggle on any past post via the History view.
+- The Feed uses a neutral background (matches History), not day-color rotation. The day-of-week color appears only as a small accent on each card's prompt label.
+- Held/hidden posts never appear on the Feed regardless of `is_public`.
 
 ## Moderation
 

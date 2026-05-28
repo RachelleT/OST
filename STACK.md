@@ -80,8 +80,10 @@ Don't install these in M1. Listed here so you know what's coming:
 | Milestone | Package | Purpose |
 |-----------|---------|---------|
 | M2 | web-push | (Edge Function side, not client) Sending push notifications |
-| M3 | html-to-image | Generating share card PNGs in browser |
-| M4 | (none — moderation calls go via Edge Functions, no client SDK needed) |
+| M3 | html-to-image | Generating share card PNGs in browser (admin "Save as image") |
+| M4 | (none — moderation runs via keyword/regex in Postgres triggers, no API SDK needed) |
+| M5 | @vercel/og | Server-side og:image generation for shared `/p/{id}` previews |
+| M5 | plausible-tracker (optional) | Lightweight privacy-friendly analytics on public pages |
 
 If Claude Code wants to add a package not on either list, it must stop and ask first.
 

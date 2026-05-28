@@ -123,8 +123,9 @@ export default function SignIn() {
           >
             <span className="text-2xl">✦</span>
           </div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">One Small Thing</h1>
-          <p className="mt-1 text-sm text-gray-500">One prompt a day, just for you.</p>
+          <h1 className="text-2xl font-bold tracking-widest uppercase" style={{ color: '#04342C', letterSpacing: '0.18em' }}>Dayspark</h1>
+          <p className="mt-0.5 text-xs tracking-widest uppercase" style={{ color: '#04342C', opacity: 0.4, letterSpacing: '0.15em' }}>by Yuvoice</p>
+          <p className="mt-2 text-sm text-gray-500">One prompt a day, just for you.</p>
         </div>
 
         {status === 'idle' || status === 'loading' || status === 'error' ? (

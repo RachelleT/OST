@@ -20,6 +20,7 @@ create table profiles (
   is_admin boolean not null default false,
   current_streak int not null default 0,
   longest_streak int not null default 0,
+  show_name_on_shared boolean not null default false, -- M5: global identity preference for shared posts
   created_at timestamptz not null default now()
 );
 ```
@@ -58,6 +59,26 @@ create index on notes(pool, active) where active = true;
 - `day_of_week`: 0=Monday..6=Sunday. NULL means the note works any day. Day-of-week-matching notes are preferred over untagged when both qualify.
 - Migration to add this table is part of M2.1 since the display code lands then. The admin CRUD UI in M3 reuses the same table.
 
+### `post_reactions`
+M5. One row per (user, post) reaction. The unique constraint enforces "at most one reaction per user per post."
+
+```sql
+create table post_reactions (
+  id uuid primary key default gen_random_uuid(),
+  post_id uuid not null references posts(id) on delete cascade,
+  user_id uuid not null references profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (post_id, user_id)
+);
+
+create index on post_reactions(post_id);
+create index on post_reactions(user_id);
+```
+
+- The single reaction type in the app is ✨ (sparkles). The DB doesn't store the emoji because there's only one — adding more reaction types would require a `reaction_type` column.
+- Tapping a reaction button toggles: if no row exists, insert; if a row exists, delete. Implemented via the `toggle_reaction(post_id)` RPC.
+- Reaction counts are public to anyone who can see the post. The list of *who* reacted is not exposed via any API.
+
 ### `daily_assignments`
 The prompt assigned to a user on a given date. Generated lazily on first today-screen open of the day.
 
@@ -85,8 +106,7 @@ create table posts (
   date date not null,
   text text check (length(text) <= 280),
   photo_url text,
-  share_anonymous boolean not null default false,
-  share_with_name boolean not null default false,
+  is_public boolean not null default false, -- M5: replaces share_anonymous + share_with_name
   moderation_status text not null default 'pending'
     check (moderation_status in ('pending', 'approved', 'held', 'hidden')),
   created_at timestamptz not null default now(),
@@ -99,7 +119,10 @@ create table posts (
 
 create index on posts(user_id, date desc);
 create index on posts(moderation_status) where moderation_status != 'approved';
+create index on posts(is_public, created_at desc) where is_public = true; -- M5: Feed query
 ```
+
+**Historical note**: M1-M4 used `share_anonymous` and `share_with_name` columns. M5 migration 0020 dropped them and added `is_public` (default false). All existing posts were set to `is_public = false` — they were written under different sharing assumptions and stay private regardless.
 
 ### `grace_days_used`
 One row per grace day consumed. Used to compute whether a user has grace available in their current week.

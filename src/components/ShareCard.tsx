@@ -149,7 +149,7 @@ export default function ShareCard({ palette, promptText, postText, authorName, s
             fontFamily: 'system-ui, -apple-system, sans-serif',
             margin: 0,
           }}>
-            one small thing
+            DAYSPARK
           </p>
         </div>
       </div>

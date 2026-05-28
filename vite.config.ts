@@ -12,9 +12,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.png'],
       manifest: {
-        name: 'One Small Thing',
-        short_name: 'One Small Thing',
-        description: 'One prompt a day. Build something quiet, just for you.',
+        name: 'Dayspark',
+        short_name: 'Dayspark',
+        description: 'One prompt a day. Build something quiet.',
         start_url: '/',
         id: '/',
         theme_color: '#2DBFA8',

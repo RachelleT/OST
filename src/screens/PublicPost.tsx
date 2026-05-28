@@ -42,7 +42,7 @@ export default function PublicPost() {
       <div style={{ minHeight: '100dvh', background: '#FAF5EC', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px', textAlign: 'center' }}>
         <p style={{ fontSize: 18, fontWeight: 600, color: '#1a1a1a', marginBottom: 8 }}>Post not found</p>
         <p style={{ fontSize: 14, color: '#6b7280' }}>This post may have been removed or is no longer featured.</p>
-        <a href="/" style={{ marginTop: 24, fontSize: 14, fontWeight: 500, color: '#04342C' }}>← one small thing</a>
+        <a href="/" style={{ marginTop: 24, fontSize: 14, fontWeight: 500, color: '#04342C' }}>← Dayspark</a>
       </div>
     )
   }
@@ -97,7 +97,7 @@ export default function PublicPost() {
       {/* Footer */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', padding: '32px 24px' }}>
         <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#04342C', opacity: 0.3, marginTop: 'auto' }}>
-          one small thing, every day ✦
+          DAYSPARK · every day ✦
         </p>
       </div>
     </div>

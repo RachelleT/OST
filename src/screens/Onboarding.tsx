@@ -85,9 +85,10 @@ export default function Onboarding({ onComplete }: Props) {
             >
               <span className="text-3xl" aria-hidden="true">✦</span>
             </div>
-            <h1 className="text-3xl font-semibold text-gray-900 mb-3 tracking-tight">
-              One Small Thing
+            <h1 className="text-3xl font-bold mb-1 uppercase tracking-widest" style={{ color: '#04342C', letterSpacing: '0.18em' }}>
+              Dayspark
             </h1>
+            <p className="text-xs uppercase tracking-widest mb-3" style={{ color: '#04342C', opacity: 0.4, letterSpacing: '0.15em' }}>by Yuvoice</p>
             <p className="text-gray-500 text-base leading-relaxed max-w-xs mx-auto">
               One prompt a day. Build something quiet, just for you.
             </p>

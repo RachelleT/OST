@@ -12,11 +12,14 @@ This is a build spec for "One Small Thing," a daily-prompt journaling PWA. You a
 6. `STACK.md` — tech choices, pinned versions, project structure
 7. `MILESTONE_1.md` — step-by-step for the first milestone (core loop) — COMPLETE
 8. `MILESTONE_2.md` — step-by-step for the second milestone (reminders + grace day) — COMPLETE
-9. `MILESTONE_2.1.md` — small follow-on to M2 (warm notes on Today screen)
-10. `MILESTONE_3.md` — step-by-step for the third milestone (admin)
-11. `MILESTONE_4.md` — step-by-step for the fourth milestone (moderation, launch gate)
+9. `MILESTONE_2.1.md` — small follow-on to M2 (warm notes on Today screen) — COMPLETE
+10. `MILESTONE_3.md` — step-by-step for the third milestone (admin) — COMPLETE
+11. `MILESTONE_4.md` — step-by-step for the fourth milestone (moderation, launch gate) — COMPLETE
+12. `MILESTONE_5.md` — step-by-step for the fifth milestone (public surfaces)
 
-M1, M2, M2.1, and M3 are all complete. M3 is locked — no changes to existing M3 code; if M4 needs touchups to M3 surfaces, those are framed as M4 enhancements (see MILESTONE_4.md "Important: M3 already shipped without M4 in mind"). M4 is the **launch gate** — after M4 ships and a 5–7 day validation period passes, the app is safe to open to a wider audience. Until then, keep the user base to friends. Read the milestone file the user points you at; do not jump ahead.
+M1 through M4 are all complete. **M5 renames the app from "One Small Thing" (OST) to "Dayspark by Yuvoice"** and adds a Feed, a simplified sharing model, and polished public surfaces. The rename happens in M5 Step 1 (code-only); the domain switchover to `dayspark.yuvoice.com` is consolidated in Step 13 (the last step) at the user's explicit request. While building M5 Steps 1-12, the app runs on the existing Vercel-default URL — don't touch Vercel domain settings, Supabase URL Configuration, or DNS until Step 13.
+
+Notable from earlier milestones: M4 shipped with deviations from its original spec (keyword-based text moderation instead of OpenAI, no image moderation, a simplified sharing model where `share_anonymous` defaulted to true). M5 collapses the old two-column sharing model into a single `is_public` boolean on `posts` plus a `show_name_on_shared` boolean on `profiles`. Read the M5 spec's "Three big changes" section before starting any step.
 
 ## Environment
 

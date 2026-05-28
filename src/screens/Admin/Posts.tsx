@@ -183,7 +183,7 @@ function PostActionSheet({
       if (!node) return
       const dataUrl = await toPng(node as HTMLElement, { pixelRatio: 3, cacheBust: true })
       const link = document.createElement('a')
-      link.download = `one-small-thing-${post.id.slice(0, 8)}.png`
+      link.download = `dayspark-${post.id.slice(0, 8)}.png`
       link.href = dataUrl
       link.click()
     } catch (e) {

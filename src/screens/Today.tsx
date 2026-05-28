@@ -197,7 +197,7 @@ export default function Today() {
           className="text-xs font-medium"
           style={{ color: '#04342C', opacity: 0.3 }}
         >
-          one small thing, every day ✦
+          DAYSPARK · every day ✦
         </p>
       </div>
     </div>
