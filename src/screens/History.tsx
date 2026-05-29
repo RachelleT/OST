@@ -49,10 +49,15 @@ export default function History() {
   const [posts, setPosts] = useState<PostRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
+  const [sharedConfirm, setSharedConfirm] = useState<string | null>(null) // postId that just went public
 
   async function updateIsPublic(postId: string, value: boolean) {
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, is_public: value } : p))
     await supabase.from('posts').update({ is_public: value }).eq('id', postId)
+    if (value) {
+      setSharedConfirm(postId)
+      setTimeout(() => setSharedConfirm(c => c === postId ? null : c), 3000)
+    }
   }
 
   useEffect(() => {
@@ -226,13 +231,18 @@ export default function History() {
                             {post.photo_url && (
                               <HistoryPhoto storagePath={post.photo_url} />
                             )}
-                            <div className="mt-3">
+                            <div className="mt-3 space-y-1.5">
                               <SharingToggles
                                 isPublic={post.is_public}
                                 onChangePublic={v => updateIsPublic(post.id, v)}
                                 accent={p.accent}
                                 bg="#F3F4F6"
                               />
+                              {sharedConfirm === post.id && (
+                                <p className="text-xs text-green-600 font-medium px-1" role="status">
+                                  ✓ This post is now on the Feed
+                                </p>
+                              )}
                             </div>
                           </>
                         )}

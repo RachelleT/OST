@@ -24,6 +24,7 @@ interface ProfileRow {
   longest_streak: number
   reminder_time: string | null
   timezone: string
+  show_name_on_shared: boolean
 }
 
 export default function Profile() {
@@ -44,6 +45,8 @@ export default function Profile() {
   const [timezone, setTimezone] = useState('')
   const [tzSaving, setTzSaving] = useState(false)
   const [tzSaved, setTzSaved] = useState(false)
+  const [showName, setShowName] = useState(false)
+  const [showNameSaving, setShowNameSaving] = useState(false)
   const [confirmDeactivate, setConfirmDeactivate] = useState(false)
   const [deactivating, setDeactivating] = useState(false)
 
@@ -51,7 +54,7 @@ export default function Profile() {
     if (!user) return
     supabase
       .from('profiles')
-      .select('display_name, created_at, current_streak, longest_streak, reminder_time, timezone')
+      .select('display_name, created_at, current_streak, longest_streak, reminder_time, timezone, show_name_on_shared')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
@@ -61,6 +64,7 @@ export default function Profile() {
           setDisplayName(row.display_name)
           setReminderValue(row.reminder_time ? row.reminder_time.slice(0, 5) : null)
           setTimezone(row.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone)
+          setShowName(row.show_name_on_shared)
         }
       })
 
@@ -113,6 +117,15 @@ export default function Profile() {
       if (ok) setNotifEnabled(true)
     }
     setNotifWorking(false)
+  }
+
+  async function toggleShowName() {
+    if (!user) return
+    const next = !showName
+    setShowName(next)
+    setShowNameSaving(true)
+    await supabase.from('profiles').update({ show_name_on_shared: next }).eq('id', user.id)
+    setShowNameSaving(false)
   }
 
   async function handleDeactivate() {
@@ -311,6 +324,34 @@ export default function Profile() {
           {tzSaved && (
             <p className="text-xs text-green-600 font-medium" role="status">Timezone updated ✓</p>
           )}
+        </div>
+
+        {/* Identity */}
+        <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">Identity</h2>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm text-gray-800 font-medium">Show my name on shared posts</p>
+              <p className="text-xs text-gray-400 mt-0.5 leading-snug">
+                When you share a post publicly, your display name appears next to it. Off means no byline.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={showName}
+              onClick={toggleShowName}
+              disabled={showNameSaving}
+              className="relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:opacity-50 mt-0.5"
+              style={{ background: showName ? '#2DBFA8' : '#d1d5db', '--tw-ring-color': '#2DBFA8' } as React.CSSProperties}
+            >
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform"
+                style={{ transform: showName ? 'translateX(16px)' : 'translateX(0)' }}
+              />
+            </button>
+          </div>
         </div>
 
         {/* Account */}

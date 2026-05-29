@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type React from 'react'
 
 interface ToggleProps {
@@ -47,15 +48,34 @@ export default function SharingToggles({
   bg,
   disabled,
 }: Props) {
+  const [showInfo, setShowInfo] = useState(false)
+
   return (
     <div className="rounded-2xl p-3" style={{ background: bg }}>
       <div className="flex items-start justify-between gap-3">
-        <label htmlFor="toggle-public" className="min-w-0 cursor-pointer">
-          <p className="text-xs font-medium text-gray-800">Share publicly</p>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <label htmlFor="toggle-public" className="text-xs font-medium text-gray-800 cursor-pointer">
+              Share publicly
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowInfo(v => !v)}
+              className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-gray-300 text-[10px] font-semibold text-gray-400 hover:text-gray-600 leading-none flex-shrink-0"
+              aria-label="What does this mean?"
+            >
+              i
+            </button>
+          </div>
           <p className="text-[11px] text-gray-400 leading-tight mt-0.5">
             Show on the Feed and let admins feature it
           </p>
-        </label>
+          {showInfo && (
+            <p className="text-[11px] text-gray-500 leading-snug mt-1.5 bg-white/60 rounded-lg px-2 py-1.5">
+              Public posts appear on the Feed for all users. Your name only appears if you've enabled that in Settings → Identity.
+            </p>
+          )}
+        </div>
         <Toggle
           id="toggle-public"
           checked={isPublic}
