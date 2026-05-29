@@ -25,21 +25,21 @@ function PostCard({ card }: { card: FeaturedCard }) {
   return (
     <Link
       to={`/p/${card.post_id}`}
-      className="block rounded-3xl p-6 no-underline transition-opacity hover:opacity-90 active:opacity-80"
-      style={{ background: palette.bg, textDecoration: 'none' }}
+      className="block rounded-3xl p-5 no-underline transition-opacity hover:opacity-90 active:opacity-80 flex-shrink-0"
+      style={{ background: palette.bg, textDecoration: 'none', minWidth: 260 }}
     >
       {post.prompts?.text && (
-        <p className="text-xs font-semibold uppercase tracking-widest mb-3 leading-snug" style={{ color: palette.textOnBg, opacity: 0.5 }}>
+        <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5 leading-snug" style={{ color: palette.textOnBg, opacity: 0.45 }}>
           {post.prompts.text}
         </p>
       )}
       {post.text && (
-        <p className="text-base font-medium leading-snug" style={{ color: palette.textOnBg }}>
-          {post.text.length > 140 ? post.text.slice(0, 140) + '…' : post.text}
+        <p className="text-sm font-medium leading-snug" style={{ color: palette.textOnBg }}>
+          {post.text.length > 120 ? post.text.slice(0, 120) + '…' : post.text}
         </p>
       )}
       {authorName && (
-        <p className="text-xs mt-3" style={{ color: palette.textOnBg, opacity: 0.55 }}>— {authorName}</p>
+        <p className="text-xs mt-3" style={{ color: palette.textOnBg, opacity: 0.5 }}>— {authorName}</p>
       )}
     </Link>
   )
@@ -66,18 +66,21 @@ export default function Home() {
   return (
     <div className="min-h-full" style={{ background: '#FAF5EC' }}>
 
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden" style={{ background: palette.bg, minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
+      {/* ── Hero — shorter so content is visible below ───────────── */}
+      <div
+        className="relative overflow-hidden flex flex-col"
+        style={{ background: palette.bg, minHeight: '72vh' }}
+      >
         <DayBackground palette={palette} />
 
         {/* Nav */}
-        <div className="relative z-10 flex items-center justify-between px-6 pt-10 pb-2">
-          <span className="text-xs font-bold tracking-[0.14em]" style={{ color: palette.textOnBg, opacity: 0.6 }}>
+        <div className="relative z-10 flex items-center justify-between px-5 pt-10">
+          <span className="text-xs font-bold tracking-[0.16em]" style={{ color: palette.textOnBg, opacity: 0.55 }}>
             DAYSPARK
           </span>
           <Link
             to="/sign-in"
-            className="text-xs font-semibold px-4 py-2 rounded-full transition-opacity hover:opacity-80"
+            className="text-xs font-semibold px-4 py-2 rounded-full"
             style={{ background: palette.textOnBg, color: palette.bg }}
           >
             Sign in
@@ -85,74 +88,109 @@ export default function Home() {
         </div>
 
         {/* Hero content */}
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-6 py-16">
+        <div className="relative z-10 flex-1 flex flex-col justify-center px-5 pt-10 pb-14">
+          {/* Icon */}
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6"
+            style={{ background: `${palette.textOnBg}22` }}
+          >
+            <span className="text-2xl" style={{ color: palette.textOnBg }}>✦</span>
+          </div>
+
           <h1
-            className="text-4xl font-semibold leading-tight tracking-tight mb-4 max-w-xs"
-            style={{ color: palette.textOnBg }}
+            className="text-3xl font-semibold leading-tight tracking-tight mb-3"
+            style={{ color: palette.textOnBg, maxWidth: 280 }}
           >
-            One prompt a day. Something quiet, just for you.
+            One prompt a day.
+            <br />
+            Something quiet,
+            <br />
+            just for you.
           </h1>
+
           <p
-            className="text-base leading-relaxed mb-10 max-w-xs"
-            style={{ color: palette.textOnBg, opacity: 0.65 }}
+            className="text-sm leading-relaxed mb-8"
+            style={{ color: palette.textOnBg, opacity: 0.6, maxWidth: 260 }}
           >
-            A tiny daily ritual. No audience, no pressure — just a moment to think and write.
+            A tiny daily ritual. Write, build a streak, share if you want.
           </p>
+
           <Link
             to="/sign-in"
-            className="inline-block rounded-full px-8 py-4 text-sm font-semibold transition-transform active:scale-95"
+            className="inline-flex items-center gap-2 self-start rounded-full px-6 py-3.5 text-sm font-semibold transition-transform active:scale-95"
             style={{ background: palette.textOnBg, color: palette.bg }}
           >
-            Start →
+            Get started →
           </Link>
         </div>
 
-        {/* Scroll hint */}
-        <div className="relative z-10 flex justify-center pb-8">
-          <span className="text-xs tracking-widest" style={{ color: palette.textOnBg, opacity: 0.3 }}>↓</span>
+        {/* Scroll hint — peeks into next section */}
+        <div className="relative z-10 flex items-center gap-2 px-5 pb-4" style={{ color: palette.textOnBg, opacity: 0.4 }}>
+          <div className="flex-1 h-px" style={{ background: palette.textOnBg, opacity: 0.15 }} />
+          <span className="text-xs tracking-widest">scroll</span>
+          <div className="flex-1 h-px" style={{ background: palette.textOnBg, opacity: 0.15 }} />
         </div>
       </div>
 
-      {/* ── Featured posts ──────────────────────────────────────────── */}
+      {/* ── How it works ─────────────────────────────────────────── */}
+      <section className="px-5 py-12">
+        <h2 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-7">How it works</h2>
+        <div className="space-y-5">
+          {[
+            { icon: '🌅', title: 'One prompt, every day', text: 'A new question each morning, chosen to make you pause and think.' },
+            { icon: '✏️', title: '280 characters or a photo', text: 'No pressure. Write as little or as much as feels right.' },
+            { icon: '🔥', title: 'Build a streak', text: 'Show up every day. Miss one? Use your weekly grace day.' },
+            { icon: '🔒', title: 'Yours by default', text: 'Everything is private until you choose to share it.' },
+          ].map(({ icon, title, text }) => (
+            <div key={title} className="flex items-start gap-4 rounded-2xl bg-white p-4 shadow-sm">
+              <span className="text-2xl leading-none mt-0.5">{icon}</span>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-0.5">{title}</p>
+                <p className="text-xs text-gray-500 leading-relaxed">{text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Featured posts ───────────────────────────────────────── */}
       {featuredPosts.length >= 3 && (
-        <section className="px-5 py-14">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6 tracking-tight">What people are writing</h2>
-          <div className="space-y-4">
+        <section className="py-10 border-t border-gray-100">
+          <h2 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-6 px-5">What people are writing</h2>
+          {/* Horizontal scroll on mobile */}
+          <div className="flex gap-4 overflow-x-auto px-5 pb-2 snap-x snap-mandatory" style={{ scrollbarWidth: 'none' }}>
             {featuredPosts.map(card => (
-              <PostCard key={card.post_id} card={card} />
+              <div key={card.post_id} className="snap-start flex-shrink-0 w-[72vw] max-w-xs">
+                <PostCard card={card} />
+              </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* ── How it works ────────────────────────────────────────────── */}
-      <section className="px-5 py-12 border-t border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-800 mb-8 tracking-tight">How it works</h2>
-        <ol className="space-y-6">
-          {[
-            { n: '1', icon: '🌅', text: 'One prompt every day — different for everyone.' },
-            { n: '2', icon: '✏️', text: 'Answer in 280 characters or a photo.' },
-            { n: '3', icon: '🔥', text: 'Build a streak. Miss a day? Use a grace day.' },
-          ].map(({ n, icon, text }) => (
-            <li key={n} className="flex items-start gap-4">
-              <span className="text-2xl leading-none">{icon}</span>
-              <p className="text-sm text-gray-600 leading-relaxed pt-0.5">{text}</p>
-            </li>
-          ))}
-        </ol>
-        <div className="mt-10 text-center">
-          <Link
-            to="/sign-in"
-            className="inline-block rounded-full px-7 py-3.5 text-sm font-semibold text-white transition-transform active:scale-95"
-            style={{ background: '#04342C' }}
-          >
-            Get started — it's free
-          </Link>
+      {/* ── CTA ──────────────────────────────────────────────────── */}
+      <section className="px-5 py-14 text-center border-t border-gray-100">
+        <div
+          className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-5"
+          style={{ background: '#2DBFA8' }}
+        >
+          <span className="text-xl text-white">✦</span>
         </div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">Start your first prompt</h2>
+        <p className="text-sm text-gray-500 mb-7 max-w-xs mx-auto leading-relaxed">
+          Free. No app store. Works on any phone. Just sign in with your email.
+        </p>
+        <Link
+          to="/sign-in"
+          className="inline-block rounded-full px-8 py-4 text-sm font-semibold text-white transition-transform active:scale-95"
+          style={{ background: '#04342C' }}
+        >
+          Sign in with email →
+        </Link>
       </section>
 
-      {/* ── Footer ──────────────────────────────────────────────────── */}
-      <footer className="px-5 py-10 border-t border-gray-100 text-center space-y-3">
+      {/* ── Footer ───────────────────────────────────────────────── */}
+      <footer className="px-5 py-8 border-t border-gray-100 text-center space-y-3">
         <p className="text-xs font-bold tracking-[0.12em] text-gray-400">DAYSPARK BY YUVOICE</p>
         <div className="flex justify-center gap-5 text-xs text-gray-400">
           <Link to="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
