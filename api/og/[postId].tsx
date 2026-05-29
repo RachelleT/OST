@@ -24,7 +24,7 @@ function truncate(text: string, max = 180) {
 
 export default async function handler(req: Request) {
   const url = new URL(req.url)
-  const postId = url.pathname.split('/').pop()?.replace('.png', '') ?? ''
+  const postId = url.pathname.split('/').pop() ?? ''
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL ?? ''
   const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY ?? ''

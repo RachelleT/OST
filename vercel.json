@@ -1,7 +1,8 @@
 {
   "rewrites": [
-    { "source": "/p/:postId", "destination": "/api/p/:postId" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/p/:postId",        "destination": "/api/p/:postId" },
+    { "source": "/api/:path*",       "destination": "/api/:path*" },
+    { "source": "/(.*)",             "destination": "/index.html" }
   ],
   "headers": [
     {

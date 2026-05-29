@@ -15,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Default og tags (used if post not found or on error)
   let ogTitle = 'Dayspark'
   let ogDescription = 'One prompt a day. Build something quiet, just for you.'
-  let ogImage = `${baseUrl}/api/og/fallback.png`
+  let ogImage = `${baseUrl}/api/og/fallback`
   const ogUrl = `${baseUrl}/p/${postId}`
 
   try {
@@ -40,7 +40,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const prompt: string = post.prompts?.text ?? ''
       ogTitle = `Dayspark — ${text.slice(0, 50)}${text.length > 50 ? '…' : ''}`
       ogDescription = prompt
-      ogImage = `${baseUrl}/api/og/${postId}.png`
+      ogImage = `${baseUrl}/api/og/${postId}`
     }
   } catch {
     // Fall through to default tags
