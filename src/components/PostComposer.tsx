@@ -26,7 +26,7 @@ export default function PostComposer({
 }: Props) {
   const profile = useProfile()
   const [text, setText] = useState(initialText)
-  const [shareNamed, setShareNamed] = useState(false)
+  const [isPublic, setIsPublic] = useState(false)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   // The storage path we'll keep if the user doesn't pick a new photo
@@ -92,8 +92,7 @@ export default function PostComposer({
         text: text.trim(),
         photoFile,
         keepPhotoUrl: keepPhotoPath,
-        shareAnon: true,
-        shareNamed,
+        isPublic,
       })
       if (error) {
         showToast(error)
@@ -191,9 +190,8 @@ export default function PostComposer({
         onChange={e => handlePhotoSelected(e.target.files?.[0] ?? null)} />
 
       <SharingToggles
-        shareNamed={shareNamed}
-        displayName={profile?.displayName ?? ''}
-        onChangeNamed={setShareNamed}
+        isPublic={isPublic}
+        onChangePublic={setIsPublic}
         accent={palette.accent}
         bg={palette.surface}
         disabled={isSubmitting}

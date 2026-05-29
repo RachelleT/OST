@@ -14,8 +14,7 @@ interface AdminPost {
   text: string | null
   photo_url: string | null
   moderation_status: string
-  share_anonymous: boolean
-  share_with_name: boolean
+  is_public: boolean
   created_at: string
   profiles: { display_name: string } | null
   prompts: { text: string } | null
@@ -108,7 +107,7 @@ function PostActionSheet({
   const [pendingMode, setPendingMode] = useState<'anonymous' | 'with_name'>('anonymous')
   const [shareCardView, setShareCardView] = useState(false)
   const [cardPalette, setCardPalette] = useState(() => dayPalette(new Date(post.date + 'T12:00:00')))
-  const [cardShowName, setCardShowName] = useState(post.share_with_name)
+  const [cardShowName, setCardShowName] = useState(false)
   const [downloading, setDownloading] = useState(false)
   const [copyDone, setCopyDone] = useState(false)
 
@@ -330,7 +329,7 @@ function PostActionSheet({
                 <div className="rounded-2xl bg-gray-50 p-4 space-y-2">
                   <p className="text-xs font-medium text-gray-600 mb-3">Display as…</p>
                   {(['anonymous', 'with_name'] as const).map(mode => {
-                    const nameBlocked = mode === 'with_name' && !post.share_with_name
+                    const nameBlocked = false // validated server-side by feature_post RPC
                     return (
                       <button
                         key={mode}
@@ -473,7 +472,7 @@ export default function AdminPosts() {
     setLoading(true)
     let q = supabase
       .from('posts')
-      .select('id, date, text, photo_url, moderation_status, share_anonymous, share_with_name, created_at, profiles(display_name), prompts(text)')
+      .select('id, date, text, photo_url, moderation_status, is_public, created_at, profiles(display_name), prompts(text)')
       .order('date',       { ascending: false })
       .order('created_at', { ascending: false })
       .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1)

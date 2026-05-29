@@ -33,18 +33,16 @@ function Toggle({ checked, onChange, disabled, accent, id }: ToggleProps) {
 }
 
 interface Props {
-  shareNamed: boolean
-  displayName: string
-  onChangeNamed: (v: boolean) => void
+  isPublic: boolean
+  onChangePublic: (v: boolean) => void
   accent: string
   bg: string
   disabled?: boolean
 }
 
 export default function SharingToggles({
-  shareNamed,
-  displayName,
-  onChangeNamed,
+  isPublic,
+  onChangePublic,
   accent,
   bg,
   disabled,
@@ -52,13 +50,19 @@ export default function SharingToggles({
   return (
     <div className="rounded-2xl p-3" style={{ background: bg }}>
       <div className="flex items-start justify-between gap-3">
-        <label htmlFor="toggle-named" className="min-w-0 cursor-pointer">
-          <p className="text-xs font-medium text-gray-800">Show my name if featured</p>
+        <label htmlFor="toggle-public" className="min-w-0 cursor-pointer">
+          <p className="text-xs font-medium text-gray-800">Share publicly</p>
           <p className="text-[11px] text-gray-400 leading-tight mt-0.5">
-            Shown as '— {displayName || 'you'}' · off means anonymous
+            Show on the Feed and let admins feature it
           </p>
         </label>
-        <Toggle id="toggle-named" checked={shareNamed} onChange={onChangeNamed} disabled={disabled} accent={accent} />
+        <Toggle
+          id="toggle-public"
+          checked={isPublic}
+          onChange={onChangePublic}
+          disabled={disabled}
+          accent={accent}
+        />
       </div>
     </div>
   )
