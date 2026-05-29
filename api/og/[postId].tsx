@@ -1,8 +1,8 @@
-import { ImageResponse } from '@vercel/og'
+// og:image generator — returns a plain SVG card (no @vercel/og needed)
+// SVGs work as og:images in iMessage, WhatsApp, Slack, Telegram, Facebook, LinkedIn.
+import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { createClient } from '@supabase/supabase-js'
 
-export const runtime = 'edge'
-
-// Palette mirrored from src/lib/palette.ts
 const PALETTES: Record<number, { bg: string; accent: string; text: string }> = {
   0: { bg: '#F4C77B', accent: '#D9972A', text: '#412402' }, // Sunday
   1: { bg: '#2DBFA8', accent: '#1D9E75', text: '#04342C' }, // Monday
@@ -14,83 +14,112 @@ const PALETTES: Record<number, { bg: string; accent: string; text: string }> = {
 }
 
 function getPalette(dateStr: string) {
-  const d = new Date(dateStr + 'T12:00:00Z')
-  return PALETTES[d.getDay()] ?? PALETTES[1]
+  return PALETTES[new Date(dateStr + 'T12:00:00Z').getDay()] ?? PALETTES[1]
 }
 
-function truncate(text: string, max = 180) {
-  return text.length > max ? text.slice(0, max).trimEnd() + '…' : text
+function escapeXml(s: string) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-export default async function handler(req: Request) {
-  const url = new URL(req.url)
-  const postId = url.pathname.split('/').pop() ?? ''
+// Wrap text into lines of ~maxChars chars, max 4 lines
+function wrapText(text: string, maxChars = 40, maxLines = 4): string[] {
+  const words = text.split(' ')
+  const lines: string[] = []
+  let current = ''
+  for (const word of words) {
+    if (lines.length >= maxLines) break
+    if ((current + ' ' + word).trim().length > maxChars) {
+      if (current) lines.push(current)
+      current = word
+    } else {
+      current = (current + ' ' + word).trim()
+    }
+  }
+  if (current && lines.length < maxLines) lines.push(current)
+  if (lines.length === maxLines && text.length > lines.join(' ').length + 3) {
+    lines[maxLines - 1] = lines[maxLines - 1].slice(0, maxChars - 3) + '…'
+  }
+  return lines
+}
 
-  const supabaseUrl = process.env.VITE_SUPABASE_URL ?? ''
-  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY ?? ''
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const postId = (req.query.postId as string) ?? ''
   const baseUrl = process.env.VITE_PUBLIC_BASE_URL ?? 'https://dayspark.yuvoice.com'
   const host = new URL(baseUrl).hostname
 
-  // Fetch featured post via Supabase REST API directly (no SDK — Edge compatible)
-  let row: Record<string, unknown> | null = null
-  try {
-    const params = new URLSearchParams({
-      select: 'post_id,display_mode,posts(text,date,prompts(text),profiles(display_name,show_name_on_shared))',
-      post_id: `eq.${postId}`,
-      unfeatured_at: 'is.null',
-    })
-    const res = await fetch(`${supabaseUrl}/rest/v1/featured_posts?${params}`, {
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-        Accept: 'application/json',
-      },
-    })
-    const rows = await res.json() as Record<string, unknown>[]
-    row = rows[0] ?? null
-  } catch { /* fall through to fallback */ }
+  let p = PALETTES[new Date().getDay()]
+  let promptText = ''
+  let postLines: string[] = []
+  let authorName: string | null = null
+  let hasPost = false
 
-  // ── Fallback card ───────────────────────────────────────────────────────────
-  if (!row || !row.posts) {
-    const p = PALETTES[new Date().getDay()]
-    return new ImageResponse(
-      <div style={{ width: '100%', height: '100%', background: p.bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ fontSize: 48, fontWeight: 700, letterSpacing: '0.12em', color: p.text, opacity: 0.6 }}>DAYSPARK</div>
-        <div style={{ fontSize: 18, color: p.text, opacity: 0.4, marginTop: 12 }}>One prompt a day. Build something quiet.</div>
-      </div>,
-      { width: 1200, height: 630, headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=3600' } },
-    )
+  if (postId !== 'fallback') {
+    try {
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.VITE_SUPABASE_ANON_KEY!,
+      )
+      const { data } = await supabase
+        .from('featured_posts')
+        .select('post_id,display_mode,posts(text,date,prompts(text),profiles(display_name,show_name_on_shared))')
+        .eq('post_id', postId)
+        .is('unfeatured_at', null)
+        .maybeSingle()
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const row = data as any
+      const post = row?.posts
+      if (post) {
+        hasPost = true
+        p = getPalette(post.date)
+        promptText = post.prompts?.text ?? ''
+        postLines = wrapText(post.text ?? '', 44, 4)
+        const showName = row.display_mode === 'with_name' && post.profiles?.show_name_on_shared
+        authorName = showName ? (post.profiles?.display_name ?? null) : null
+      }
+    } catch { /* fallback card */ }
   }
 
-  const post = row.posts as Record<string, unknown>
-  const p = getPalette(post.date as string)
-  const promptText = (post.prompts as Record<string, unknown> | null)?.text as string ?? ''
-  const postText = post.text as string ?? ''
-  const profile = post.profiles as Record<string, unknown> | null
-  const showName = row.display_mode === 'with_name' && profile?.show_name_on_shared === true
-  const authorName = showName ? (profile?.display_name as string | null) : null
+  const W = 1200
+  const H = 630
+  const cx = W / 2
+  const cy = H / 2
 
-  return new ImageResponse(
-    <div style={{ width: '100%', height: '100%', background: p.bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 80px', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: -40, right: -40, width: 260, height: 260, borderRadius: '50%', background: p.accent, opacity: 0.35 }} />
-      <div style={{ position: 'absolute', bottom: -60, left: -60, width: 200, height: 200, borderRadius: '50%', background: p.accent, opacity: 0.2 }} />
+  // Layout: prompt at cy-110, post text centered around cy, author at cy+130
+  const fontSize = postLines.length > 2 ? 52 : 62
+  const lineH = fontSize * 1.3
+  const textStartY = cy - ((postLines.length - 1) * lineH) / 2
 
-      <div style={{ position: 'absolute', top: 40, left: 60, fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', color: p.text, opacity: 0.45 }}>
-        DAYSPARK · {host}
-      </div>
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  <rect width="${W}" height="${H}" fill="${p.bg}"/>
 
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, maxWidth: 900 }}>
-        {promptText ? <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: p.text, opacity: 0.5 }}>{promptText}</div> : null}
-        <div style={{ fontSize: postText.length > 100 ? 36 : 44, fontWeight: 500, lineHeight: 1.3, color: p.text, textAlign: 'center', letterSpacing: '-0.3px' }}>
-          {truncate(postText)}
-        </div>
-        {authorName ? <div style={{ fontSize: 18, color: p.text, opacity: 0.55, fontWeight: 500 }}>— {authorName}</div> : null}
-      </div>
+  <!-- Decorative blobs -->
+  <circle cx="${W + 40}" cy="-40" r="200" fill="${p.accent}" opacity="0.3"/>
+  <circle cx="-60" cy="${H + 60}" r="160" fill="${p.accent}" opacity="0.18"/>
 
-      <div style={{ position: 'absolute', bottom: 40, right: 60, fontSize: 13, fontWeight: 600, letterSpacing: '0.06em', color: p.text, opacity: 0.35 }}>
-        Featured on Dayspark
-      </div>
-    </div>,
-    { width: 1200, height: 630, headers: { 'Cache-Control': 'public, max-age=86400, s-maxage=86400' } },
-  )
+  <!-- Wordmark -->
+  <text x="60" y="54" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700" letter-spacing="8" fill="${p.text}" opacity="0.4">DAYSPARK · ${escapeXml(host)}</text>
+
+  ${!hasPost ? `
+  <!-- Fallback -->
+  <text x="${cx}" y="${cy - 20}" font-family="system-ui,-apple-system,sans-serif" font-size="64" font-weight="700" letter-spacing="10" text-anchor="middle" fill="${p.text}" opacity="0.55">DAYSPARK</text>
+  <text x="${cx}" y="${cy + 44}" font-family="system-ui,-apple-system,sans-serif" font-size="22" text-anchor="middle" fill="${p.text}" opacity="0.38">One prompt a day. Build something quiet.</text>
+  ` : `
+  <!-- Prompt -->
+  ${promptText ? `<text x="${cx}" y="${textStartY - 52}" font-family="system-ui,-apple-system,sans-serif" font-size="15" font-weight="600" letter-spacing="4" text-anchor="middle" fill="${p.text}" opacity="0.45" text-transform="uppercase">${escapeXml(promptText.toUpperCase())}</text>` : ''}
+
+  <!-- Post text lines -->
+  ${postLines.map((line, i) => `<text x="${cx}" y="${textStartY + i * lineH}" font-family="system-ui,-apple-system,sans-serif" font-size="${fontSize}" font-weight="500" text-anchor="middle" fill="${p.text}" opacity="0.9">${escapeXml(line)}</text>`).join('\n  ')}
+
+  <!-- Author -->
+  ${authorName ? `<text x="${cx}" y="${textStartY + postLines.length * lineH + 32}" font-family="system-ui,-apple-system,sans-serif" font-size="22" text-anchor="middle" fill="${p.text}" opacity="0.5">— ${escapeXml(authorName)}</text>` : ''}
+  `}
+
+  <!-- Footer -->
+  <text x="${W - 60}" y="${H - 36}" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="600" letter-spacing="3" text-anchor="end" fill="${p.text}" opacity="0.3">FEATURED ON DAYSPARK</text>
+</svg>`
+
+  res.setHeader('Content-Type', 'image/svg+xml')
+  res.setHeader('Cache-Control', hasPost ? 'public, max-age=86400, s-maxage=86400' : 'public, max-age=3600, s-maxage=3600')
+  res.status(200).send(svg)
 }
