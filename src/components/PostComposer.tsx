@@ -4,7 +4,6 @@ import type { Palette } from '../lib/palette'
 import type { Post } from '../hooks/usePost'
 import { usePost } from '../hooks/usePost'
 import { supabase } from '../lib/supabase'
-import { useProfile } from '../lib/ProfileContext'
 import SharingToggles from './SharingToggles'
 
 const MAX_CHARS = 280
@@ -24,7 +23,6 @@ export default function PostComposer({
   initialText = '',
   initialPhotoStoragePath,
 }: Props) {
-  const profile = useProfile()
   const [text, setText] = useState(initialText)
   const [isPublic, setIsPublic] = useState(false)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
