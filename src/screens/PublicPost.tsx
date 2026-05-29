@@ -13,7 +13,7 @@ interface FeaturedPost {
   prompt_text: string
   post_date: string
   display_mode: string
-  author_name: string | null
+  author_name: string | null  // null = no byline
 }
 
 function Spinner() {
@@ -72,16 +72,47 @@ export default function PublicPost() {
 
   useEffect(() => {
     if (!postId) { setPost(null); return }
+
+    // Query directly (no RPC) using RLS policies that allow anon access
+    // to featured public approved posts.
     supabase
-      .rpc('get_featured_post', { p_post_id: postId })
+      .from('featured_posts')
+      .select(`
+        post_id,
+        display_mode,
+        posts (
+          text,
+          photo_url,
+          date,
+          prompts ( text ),
+          profiles ( display_name, show_name_on_shared )
+        )
+      `)
+      .eq('post_id', postId)
+      .is('unfeatured_at', null)
+      .maybeSingle()
       .then(({ data, error }) => {
         if (error) {
-          console.error('[PublicPost] get_featured_post error:', error)
+          console.error('[PublicPost] query error:', error)
           setPost(null)
           return
         }
-        const rows = data as FeaturedPost[] | null
-        setPost(rows?.[0] ?? null)
+        if (!data) { setPost(null); return }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const row = data as any
+        const p = row.posts
+        const showName =
+          row.display_mode === 'with_name' && p?.profiles?.show_name_on_shared
+        setPost({
+          post_id:      row.post_id,
+          post_text:    p?.text ?? null,
+          photo_url:    p?.photo_url ?? null,
+          prompt_text:  p?.prompts?.text ?? '',
+          post_date:    p?.date ?? '',
+          display_mode: row.display_mode,
+          author_name:  showName ? (p?.profiles?.display_name ?? null) : null,
+        })
       })
   }, [postId])
 
