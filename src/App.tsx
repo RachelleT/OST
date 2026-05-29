@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import { ProfileProvider, useProfile } from './lib/ProfileContext'
 import { supabase } from './lib/supabase'
+import Home from './screens/Home'
 import SignIn from './screens/SignIn'
 import Onboarding from './screens/Onboarding'
 import Today from './screens/Today'
@@ -124,7 +125,9 @@ export default function App() {
     return (
       <BrowserRouter>
         <Routes>
-          <Route path="*" element={<SignIn />} />
+          <Route path="/"        element={<Home />} />
+          <Route path="/sign-in" element={<SignIn />} />
+          <Route path="*"        element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     )
