@@ -102,6 +102,8 @@ export default function PublicPost() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const row = data as any
         const p = row.posts
+        // posts is null when RLS filters it out (is_public revoked, or not approved)
+        if (!p) { setPost(null); return }
         const showName =
           row.display_mode === 'with_name' && p?.profiles?.show_name_on_shared
         setPost({
