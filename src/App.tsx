@@ -5,6 +5,9 @@ import { ProfileProvider, useProfile } from './lib/ProfileContext'
 import { supabase } from './lib/supabase'
 import Home from './screens/Home'
 import SignIn from './screens/SignIn'
+import Privacy from './screens/Privacy'
+import Terms from './screens/Terms'
+import Contact from './screens/Contact'
 import Onboarding from './screens/Onboarding'
 import Today from './screens/Today'
 import History from './screens/History'
@@ -50,11 +53,14 @@ function AuthedApp() {
     <div className="app-shell flex flex-col min-h-full">
       <div className="flex-1 pb-16 flex flex-col">
         <Routes>
-          <Route path="/" element={<Today />} />
+          <Route path="/"        element={<Today />} />
           <Route path="/history" element={<History />} />
-          <Route path="/feed" element={<Feed />} />
+          <Route path="/feed"    element={<Feed />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms"   element={<Terms />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="*"        element={<Navigate to="/" replace />} />
         </Routes>
       </div>
       <BottomNav />
@@ -127,6 +133,9 @@ export default function App() {
         <Routes>
           <Route path="/"        element={<Home />} />
           <Route path="/sign-in" element={<SignIn />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms"   element={<Terms />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="*"        element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

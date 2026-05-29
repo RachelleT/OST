@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/p/:postId",        "destination": "/api/p/:postId" },
+    { "source": "/sitemap.xml",      "destination": "/api/sitemap" },
     { "source": "/api/:path*",       "destination": "/api/:path*" },
     { "source": "/(.*)",             "destination": "/index.html" }
   ],

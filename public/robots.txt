@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /p/
+
+Disallow: /admin/
+Disallow: /today
+Disallow: /history
+Disallow: /feed
+Disallow: /profile
+Disallow: /sign-in
+
+# Update this URL in Step 13 when the custom domain goes live
+Sitemap: https://ost-puce.vercel.app/sitemap.xml
