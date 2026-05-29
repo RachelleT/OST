@@ -74,7 +74,12 @@ export default function PublicPost() {
     if (!postId) { setPost(null); return }
     supabase
       .rpc('get_featured_post', { p_post_id: postId })
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[PublicPost] get_featured_post error:', error)
+          setPost(null)
+          return
+        }
         const rows = data as FeaturedPost[] | null
         setPost(rows?.[0] ?? null)
       })
