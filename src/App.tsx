@@ -7,6 +7,7 @@ import SignIn from './screens/SignIn'
 import Onboarding from './screens/Onboarding'
 import Today from './screens/Today'
 import History from './screens/History'
+import Feed from './screens/Feed'
 import Profile from './screens/Profile'
 import Deactivated from './screens/Deactivated'
 import PaletteDebug from './screens/PaletteDebug'
@@ -50,6 +51,7 @@ function AuthedApp() {
         <Routes>
           <Route path="/" element={<Today />} />
           <Route path="/history" element={<History />} />
+          <Route path="/feed" element={<Feed />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

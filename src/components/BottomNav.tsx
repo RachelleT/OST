@@ -20,6 +20,16 @@ function HistoryIcon() {
   )
 }
 
+function FeedIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3.5" width="14" height="4" rx="1" />
+      <rect x="3" y="9.5" width="14" height="4" rx="1" />
+      <line x1="3" y1="16.5" x2="11" y2="16.5" />
+    </svg>
+  )
+}
+
 function ProfileIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
@@ -32,6 +42,7 @@ function ProfileIcon() {
 const TABS: { to: string; label: string; icon: ReactNode }[] = [
   { to: '/',        label: 'Today',   icon: <TodayIcon /> },
   { to: '/history', label: 'History', icon: <HistoryIcon /> },
+  { to: '/feed',    label: 'Feed',    icon: <FeedIcon /> },
   { to: '/profile', label: 'You',     icon: <ProfileIcon /> },
 ]
 
