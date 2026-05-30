@@ -119,13 +119,30 @@ export default function Home() {
               </div>
 
               {/* Right: Featured posts preview (lg+ only) */}
-              {featuredPosts.length >= 3 && (
-                <div className="hidden lg:flex flex-col gap-3">
-                  {featuredPosts.slice(0, 3).map(card => (
+              <div className="hidden lg:flex flex-col gap-3">
+                {featuredPosts.length >= 3 ? (
+                  featuredPosts.slice(0, 3).map(card => (
                     <PostCard key={card.post_id} card={card} />
-                  ))}
-                </div>
-              )}
+                  ))
+                ) : (
+                  // Placeholder cards when no featured posts exist yet
+                  [
+                    { palette: '#F4C77B', text: 'What are you curious about today?' },
+                    { palette: '#2DBFA8', text: 'Writing brings clarity.' },
+                    { palette: '#FF7A59', text: 'Small moments, big meaning.' },
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="rounded-2xl p-4"
+                      style={{ background: item.palette, opacity: 0.5 }}
+                    >
+                      <p className="text-xs font-medium leading-snug" style={{ color: '#000', opacity: 0.4 }}>
+                        {item.text}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
