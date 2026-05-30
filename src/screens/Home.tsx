@@ -70,9 +70,9 @@ export default function Home() {
       <div className="relative overflow-hidden" style={{ background: palette.bg }}>
         <DayBackground palette={palette} />
 
-        <div className="relative z-10 max-w-2xl mx-auto px-6">
+        <div className="relative z-10 w-full px-6 lg:px-8">
           {/* Nav */}
-          <div className="flex items-center justify-between pt-8 pb-8">
+          <div className="flex items-center justify-between pt-8 pb-8 max-w-6xl mx-auto">
             <span className="text-[10px] font-bold tracking-[0.16em]" style={{ color: palette.textOnBg, opacity: 0.55 }}>
               DAYSPARK
             </span>
@@ -86,7 +86,7 @@ export default function Home() {
           </div>
 
           {/* Hero content */}
-          <div className="pb-10">
+          <div className="pb-10 max-w-2xl">
             <div
               className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
               style={{ background: `${palette.textOnBg}1A` }}
@@ -118,61 +118,67 @@ export default function Home() {
       </div>
 
       {/* ── How it works ─────────────────────────────────────────── */}
-      <section className="px-6 py-10 max-w-2xl mx-auto">
-        <h2 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">How it works</h2>
-        <div className="space-y-2">
-          {[
-            { icon: '🌅', title: 'One prompt, every day', text: 'A new question each morning, chosen to make you pause and think.' },
-            { icon: '✏️', title: '280 characters or a photo', text: 'No pressure. Write as little or as much as feels right.' },
-            { icon: '🔥', title: 'Build a streak', text: 'Show up every day. Miss one? Use your weekly grace day.' },
-            { icon: '🔒', title: 'Yours by default', text: 'Everything is private until you choose to share it.' },
-          ].map(({ icon, title, text }) => (
-            <div key={title} className="flex items-start gap-3 bg-white rounded-lg px-3.5 py-3" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-              <span className="text-lg leading-none mt-px flex-shrink-0">{icon}</span>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-gray-800 mb-0.5">{title}</p>
-                <p className="text-[11px] text-gray-500 leading-relaxed">{text}</p>
+      <section className="px-6 py-10 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">How it works</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { icon: '🌅', title: 'One prompt, every day', text: 'A new question each morning, chosen to make you pause and think.' },
+              { icon: '✏️', title: '280 characters or a photo', text: 'No pressure. Write as little or as much as feels right.' },
+              { icon: '🔥', title: 'Build a streak', text: 'Show up every day. Miss one? Use your weekly grace day.' },
+              { icon: '🔒', title: 'Yours by default', text: 'Everything is private until you choose to share it.' },
+            ].map(({ icon, title, text }) => (
+              <div key={title} className="flex items-start gap-3 bg-white rounded-lg px-3.5 py-3" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                <span className="text-lg leading-none mt-px flex-shrink-0">{icon}</span>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-gray-800 mb-0.5">{title}</p>
+                  <p className="text-[11px] text-gray-500 leading-relaxed">{text}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── Featured posts ───────────────────────────────────────── */}
       {featuredPosts.length >= 3 && (
-        <section className="py-8 border-t border-gray-100">
-          <h2 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-3 px-6 max-w-2xl mx-auto">What people are writing</h2>
-          <div className="space-y-2 px-6 max-w-2xl mx-auto">
-            {featuredPosts.map(card => (
-              <PostCard key={card.post_id} card={card} />
-            ))}
+        <section className="py-8 border-t border-gray-100 px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">What people are writing</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {featuredPosts.map(card => (
+                <PostCard key={card.post_id} card={card} />
+              ))}
+            </div>
           </div>
         </section>
       )}
 
       {/* ── CTA ──────────────────────────────────────────────────── */}
-      <section className="px-6 py-10 text-center border-t border-gray-100 max-w-2xl mx-auto">
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-3"
-          style={{ background: '#2DBFA8' }}
-        >
-          <span className="text-lg text-white">✦</span>
+      <section className="px-6 py-10 text-center border-t border-gray-100 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-3"
+            style={{ background: '#2DBFA8' }}
+          >
+            <span className="text-lg text-white">✦</span>
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-1.5 tracking-tight">Start your first prompt</h2>
+          <p className="text-xs text-gray-500 mb-5 max-w-xs mx-auto leading-relaxed">
+            Free. No app store. Works on any phone. Just sign in with your email.
+          </p>
+          <Link
+            to="/sign-in"
+            className="inline-block rounded-full px-6 py-3 text-sm font-semibold text-white transition-transform active:scale-95"
+            style={{ background: '#04342C' }}
+          >
+            Sign in with email →
+          </Link>
         </div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-1.5 tracking-tight">Start your first prompt</h2>
-        <p className="text-xs text-gray-500 mb-5 max-w-xs mx-auto leading-relaxed">
-          Free. No app store. Works on any phone. Just sign in with your email.
-        </p>
-        <Link
-          to="/sign-in"
-          className="inline-block rounded-full px-6 py-3 text-sm font-semibold text-white transition-transform active:scale-95"
-          style={{ background: '#04342C' }}
-        >
-          Sign in with email →
-        </Link>
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────── */}
-      <footer className="px-6 py-6 border-t border-gray-100 text-center space-y-2.5">
+      <footer className="px-6 py-6 border-t border-gray-100 text-center space-y-2.5 lg:px-8">
         <p className="text-[10px] font-bold tracking-[0.12em] text-gray-400">DAYSPARK BY YUVOICE</p>
         <div className="flex justify-center gap-4 text-[11px] text-gray-400">
           <Link to="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
