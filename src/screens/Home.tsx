@@ -119,33 +119,13 @@ export default function Home() {
               </div>
 
               {/* Right: Featured posts preview (lg+ only) */}
-              <div className="hidden lg:flex flex-col gap-3">
-                {featuredPosts.length >= 3 ? (
-                  featuredPosts.slice(0, 3).map(card => (
+              {featuredPosts.length >= 3 && (
+                <div className="hidden lg:flex flex-col gap-3">
+                  {featuredPosts.slice(0, 3).map(card => (
                     <PostCard key={card.post_id} card={card} />
-                  ))
-                ) : (
-                  // Placeholder cards when no featured posts exist yet
-                  [
-                    { color: '#F4C77B', prompt: 'What are you curious about today?', reply: 'Everything. I want to know how things work.' },
-                    { color: '#2DBFA8', prompt: 'What inspired you this week?', reply: 'A conversation with a friend about books and memory.' },
-                    { color: '#FF7A59', prompt: 'What did you learn about yourself?', reply: 'That quiet time matters more than I thought.' },
-                  ].map((item, i) => (
-                    <div
-                      key={i}
-                      className="rounded-2xl p-4 bg-white"
-                      style={{ borderLeft: `4px solid ${item.color}` }}
-                    >
-                      <p className="text-[9px] font-bold uppercase tracking-widest mb-2 leading-snug text-gray-400">
-                        {item.prompt}
-                      </p>
-                      <p className="text-xs font-medium leading-snug text-gray-700">
-                        {item.reply}
-                      </p>
-                    </div>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
