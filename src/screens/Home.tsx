@@ -56,7 +56,7 @@ export default function Home() {
       .select('post_id, display_mode, posts(text, date, prompts(text), profiles(display_name, show_name_on_shared))')
       .is('unfeatured_at', null)
       .order('featured_at', { ascending: false })
-      .limit(3)
+      .limit(6)
       .then(({ data }) => {
         const rows = (data ?? []) as unknown as FeaturedCard[]
         setFeaturedPosts(rows.filter(r => r.posts !== null))
@@ -72,7 +72,7 @@ export default function Home() {
 
         <div className="relative z-10 w-full px-6 lg:px-8">
           {/* Nav */}
-          <div className="flex items-center justify-between pt-8 pb-8 max-w-6xl mx-auto">
+          <div className="flex items-center justify-between pt-8 pb-6 max-w-6xl mx-auto">
             <span className="text-[10px] font-bold tracking-[0.16em]" style={{ color: palette.textOnBg, opacity: 0.55 }}>
               DAYSPARK
             </span>
@@ -85,34 +85,48 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Hero content */}
-          <div className="pb-10 max-w-2xl">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-              style={{ background: `${palette.textOnBg}1A` }}
-            >
-              <span className="text-xl" style={{ color: palette.textOnBg }}>✦</span>
+          {/* Hero: 2-column on lg, single column on mobile */}
+          <div className="max-w-6xl mx-auto pb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
+              {/* Left: CTA */}
+              <div>
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
+                  style={{ background: `${palette.textOnBg}1A` }}
+                >
+                  <span className="text-xl" style={{ color: palette.textOnBg }}>✦</span>
+                </div>
+                <h1
+                  className="text-3xl sm:text-4xl font-semibold leading-tight tracking-tight mb-3"
+                  style={{ color: palette.textOnBg }}
+                >
+                  One prompt a day.
+                  <br />
+                  Something quiet,
+                  <br />
+                  just for you.
+                </h1>
+                <p className="text-sm leading-relaxed mb-6 max-w-sm" style={{ color: palette.textOnBg, opacity: 0.6 }}>
+                  A tiny daily ritual. Write, build a streak, share if you want.
+                </p>
+                <Link
+                  to="/sign-in"
+                  className="inline-block rounded-full px-6 py-3 text-sm font-semibold transition-transform active:scale-95"
+                  style={{ background: palette.textOnBg, color: palette.bg }}
+                >
+                  Get started →
+                </Link>
+              </div>
+
+              {/* Right: Featured posts preview (lg+ only) */}
+              {featuredPosts.length >= 3 && (
+                <div className="hidden lg:flex flex-col gap-3">
+                  {featuredPosts.slice(0, 3).map(card => (
+                    <PostCard key={card.post_id} card={card} />
+                  ))}
+                </div>
+              )}
             </div>
-            <h1
-              className="text-3xl sm:text-4xl font-semibold leading-tight tracking-tight mb-3"
-              style={{ color: palette.textOnBg }}
-            >
-              One prompt a day.
-              <br />
-              Something quiet,
-              <br />
-              just for you.
-            </h1>
-            <p className="text-sm leading-relaxed mb-6 max-w-xs" style={{ color: palette.textOnBg, opacity: 0.6 }}>
-              A tiny daily ritual. Write, build a streak, share if you want.
-            </p>
-            <Link
-              to="/sign-in"
-              className="inline-block rounded-full px-6 py-3 text-sm font-semibold transition-transform active:scale-95"
-              style={{ background: palette.textOnBg, color: palette.bg }}
-            >
-              Get started →
-            </Link>
           </div>
         </div>
       </div>
@@ -144,9 +158,9 @@ export default function Home() {
       {featuredPosts.length >= 3 && (
         <section className="py-8 border-t border-gray-100 px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">What people are writing</h2>
+            <h2 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">More from the community</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {featuredPosts.map(card => (
+              {featuredPosts.slice(3).map(card => (
                 <PostCard key={card.post_id} card={card} />
               ))}
             </div>
