@@ -127,17 +127,20 @@ export default function Home() {
                 ) : (
                   // Placeholder cards when no featured posts exist yet
                   [
-                    { palette: '#F4C77B', text: 'What are you curious about today?' },
-                    { palette: '#2DBFA8', text: 'Writing brings clarity.' },
-                    { palette: '#FF7A59', text: 'Small moments, big meaning.' },
+                    { color: '#F4C77B', prompt: 'Sunday prompt', post: 'What are you curious about today?' },
+                    { color: '#2DBFA8', prompt: 'Monday prompt', post: 'Writing brings clarity.' },
+                    { color: '#FF7A59', prompt: 'Tuesday prompt', post: 'Small moments, big meaning.' },
                   ].map((item, i) => (
                     <div
                       key={i}
-                      className="rounded-2xl p-4"
-                      style={{ background: item.palette, opacity: 0.5 }}
+                      className="rounded-2xl p-4 bg-white"
+                      style={{ borderLeft: `4px solid ${item.color}` }}
                     >
-                      <p className="text-xs font-medium leading-snug" style={{ color: '#000', opacity: 0.4 }}>
-                        {item.text}
+                      <p className="text-[9px] font-bold uppercase tracking-widest mb-1.5 leading-snug" style={{ color: item.color, opacity: 0.5 }}>
+                        {item.prompt}
+                      </p>
+                      <p className="text-xs font-medium leading-snug text-gray-600">
+                        {item.post}
                       </p>
                     </div>
                   ))
