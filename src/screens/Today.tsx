@@ -109,7 +109,7 @@ export default function Today() {
       <div className="relative overflow-hidden" style={{ background: palette.bg }}>
         <DayBackground palette={palette} />
 
-        <div className="relative z-10 px-5 pt-12 pb-10">
+        <div className="relative z-10 px-5 pt-12 pb-20">
 
           {/* Top bar */}
           <div className="flex items-center justify-between mb-6">

@@ -53,14 +53,11 @@ function InstallSheet({ onClose, onInstall }: { onClose: () => void; onInstall?:
               </button>
             </>
           ) : (
-            <>
-              <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-2 py-1">Must use <strong>Chrome</strong> — Samsung Internet won't install it as an app</p>
-              <ol className="text-sm text-gray-600 space-y-1 list-none">
-                <li>1. Open in <strong>Chrome</strong></li>
-                <li>2. Tap the <strong>⋮ menu</strong> in the top right</li>
-                <li>3. Tap <strong>"Add to Home screen"</strong></li>
-              </ol>
-            </>
+            <ol className="text-sm text-gray-600 space-y-1 list-none">
+              <li>1. Open in <strong>Chrome</strong></li>
+              <li>2. Tap the <strong>⋮ menu</strong> in the top right</li>
+              <li>3. Tap <strong>"Add to Home screen"</strong></li>
+            </ol>
           )}
         </div>
       </div>

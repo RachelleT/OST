@@ -91,10 +91,18 @@ export function useTodayPost(): UseTodayPost {
     const today = userToday(timezone)
 
     async function load() {
+      const { data: authData } = await supabase.auth.getUser()
+      const userId = authData?.user?.id
+      if (!userId) {
+        setIsLoading(false)
+        return
+      }
+
       const { data } = await supabase
         .from('posts')
         .select('*')
         .eq('date', today)
+        .eq('user_id', userId)
         .maybeSingle()
 
       if (cancelled) return
