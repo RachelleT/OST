@@ -105,11 +105,11 @@ export default function Today() {
   return (
     <div className="flex-1 flex flex-col overflow-y-auto" style={{ background: '#FAF5EC' }}>
 
-      {/* Colored section — content height only */}
-      <div className="relative overflow-hidden" style={{ background: palette.bg }}>
+      {/* Colored section — grows to fill available space */}
+      <div className="flex-1 relative overflow-y-auto" style={{ background: palette.bg }}>
         <DayBackground palette={palette} />
 
-        <div className="relative z-10 px-5 pt-12 pb-20">
+        <div className="relative z-10 px-5 pt-12 pb-10">
 
           {/* Top bar */}
           <div className="flex items-center justify-between mb-6">
@@ -191,8 +191,8 @@ export default function Today() {
         </div>
       </div>
 
-      {/* Neutral space below colored section */}
-      <div className="py-8 text-center">
+      {/* Neutral space below colored section — fixed at bottom */}
+      <div className="py-6 text-center" style={{ background: '#FAF5EC' }}>
         <p
           className="text-xs font-medium"
           style={{ color: '#04342C', opacity: 0.3 }}
