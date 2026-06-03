@@ -45,51 +45,16 @@ export default function Onboarding({ onComplete }: Props) {
       return
     }
 
-    // Final step — save name + reminder
+    // Final step — save name + reminder via RPC
     setSaving(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        throw new Error('Not signed in')
-      }
+      const { error } = await supabase.rpc('setup_user_profile', {
+        p_display_name: displayName.trim(),
+        p_reminder_time: reminderValue,
+      })
 
-      // Check if profile exists (trigger might have failed)
-      const { data: profile, error: checkError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      if (checkError) {
-        throw new Error(`Failed to check profile: ${checkError.message}`)
-      }
-
-      if (!profile) {
-        // Profile doesn't exist, create it
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: user.id,
-            display_name: displayName.trim(),
-            reminder_time: reminderValue,
-          })
-
-        if (insertError) {
-          throw new Error(`Failed to create profile: ${insertError.message}`)
-        }
-      } else {
-        // Profile exists, update it
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            display_name: displayName.trim(),
-            reminder_time: reminderValue,
-          })
-          .eq('id', user.id)
-
-        if (updateError) {
-          throw new Error(`Database error updating user: ${updateError.message}`)
-        }
+      if (error) {
+        throw new Error(`Failed to set up profile: ${error.message}`)
       }
 
       onComplete()
