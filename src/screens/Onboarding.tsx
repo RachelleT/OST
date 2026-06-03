@@ -47,18 +47,30 @@ export default function Onboarding({ onComplete }: Props) {
 
     // Final step — save name + reminder
     setSaving(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await supabase
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('Not signed in')
+      }
+
+      const { error } = await supabase
         .from('profiles')
         .update({
           display_name: displayName.trim(),
           reminder_time: reminderValue,
         })
         .eq('id', user.id)
+
+      if (error) {
+        throw new Error(`Database error updating user: ${error.message}`)
+      }
+
+      onComplete()
+    } catch (err) {
+      setSaving(false)
+      const message = err instanceof Error ? err.message : 'Failed to save profile'
+      alert(message)
     }
-    setSaving(false)
-    onComplete()
   }
 
   return (
