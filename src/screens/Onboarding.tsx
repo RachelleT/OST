@@ -53,16 +53,43 @@ export default function Onboarding({ onComplete }: Props) {
         throw new Error('Not signed in')
       }
 
-      const { error } = await supabase
+      // Check if profile exists (trigger might have failed)
+      const { data: profile, error: checkError } = await supabase
         .from('profiles')
-        .update({
-          display_name: displayName.trim(),
-          reminder_time: reminderValue,
-        })
+        .select('id')
         .eq('id', user.id)
+        .maybeSingle()
 
-      if (error) {
-        throw new Error(`Database error updating user: ${error.message}`)
+      if (checkError) {
+        throw new Error(`Failed to check profile: ${checkError.message}`)
+      }
+
+      if (!profile) {
+        // Profile doesn't exist, create it
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            display_name: displayName.trim(),
+            reminder_time: reminderValue,
+          })
+
+        if (insertError) {
+          throw new Error(`Failed to create profile: ${insertError.message}`)
+        }
+      } else {
+        // Profile exists, update it
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            display_name: displayName.trim(),
+            reminder_time: reminderValue,
+          })
+          .eq('id', user.id)
+
+        if (updateError) {
+          throw new Error(`Database error updating user: ${updateError.message}`)
+        }
       }
 
       onComplete()
