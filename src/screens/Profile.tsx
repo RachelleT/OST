@@ -333,7 +333,7 @@ export default function Profile() {
             <div className="min-w-0">
               <p className="text-sm text-gray-800 font-medium">Show my name on shared posts</p>
               <p className="text-xs text-gray-400 mt-0.5 leading-snug">
-                When you share a post publicly, your display name appears next to it. Off means no byline.
+                Enabled: your name appears on shared posts. Disabled: posts appear anonymously.
               </p>
             </div>
             <button
